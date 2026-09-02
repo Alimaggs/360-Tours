@@ -112,8 +112,9 @@ document.querySelector('#app').innerHTML = `
     <aside class="inspector">
       <div class="inspector-empty" id="inspector-empty">
         <span>${icons.hotspot}</span>
-        <h3>No interaction selected</h3>
-        <p>Select a hotspot or info point in the viewer to edit its content.</p>
+        <h3 id="inspector-overview-title">No scene selected</h3>
+        <p id="inspector-overview-copy">Choose a scene to view and edit its interactions.</p>
+        <div class="interaction-index" id="interaction-index"></div>
       </div>
       <div class="inspector-content" id="inspector-content" hidden>
         <div class="inspector-header">
@@ -369,7 +370,35 @@ function closeInspector() {
   state.activeHotspotId = null
   $('#inspector-empty').hidden = false
   $('#inspector-content').hidden = true
+  renderInspectorOverview()
   renderHotspots()
+}
+
+function renderInspectorOverview() {
+  const scene = activeScene()
+  const panel = $('#inspector-empty')
+  panel.classList.toggle('has-scene', Boolean(scene))
+  if (!scene) {
+    $('#inspector-overview-title').textContent = 'No scene selected'
+    $('#inspector-overview-copy').textContent = 'Choose a scene to view and edit its interactions.'
+    $('#interaction-index').innerHTML = ''
+    return
+  }
+
+  $('#inspector-overview-title').textContent = scene.name
+  $('#inspector-overview-copy').textContent = scene.hotspots.length
+    ? 'Select an interaction below or directly in the viewer.'
+    : 'This scene has no interactions yet. Add a hotspot or info point above the viewer.'
+  $('#interaction-index').innerHTML = scene.hotspots.map((interaction) => `
+    <button data-inspector-interaction="${interaction.id}">
+      <i>${interaction.type === 'info' ? 'i' : '→'}</i>
+      <span><strong>${escapeHtml(interaction.label)}</strong><small>${interaction.type === 'info' ? 'Info point' : 'Linked hotspot'}</small></span>
+      ${icons.chevron}
+    </button>
+  `).join('')
+  document.querySelectorAll('[data-inspector-interaction]').forEach((button) => {
+    button.addEventListener('click', () => selectHotspot(button.dataset.inspectorInteraction))
+  })
 }
 
 function playVideo() {
@@ -760,7 +789,8 @@ function bindEvents() {
   shell.addEventListener('drop', (event) => addFiles(event.dataTransfer.files))
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') cancelAddHotspot()
-    if (event.code === 'Space' && event.target.tagName !== 'INPUT') {
+    const isFormControl = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(event.target.tagName) || event.target.isContentEditable
+    if (event.code === 'Space' && !isFormControl) {
       event.preventDefault()
       if (activeScene()) video.paused ? playVideo() : video.pause()
     }
@@ -771,3 +801,4 @@ function bindEvents() {
 state.renderer = createViewer()
 bindEvents()
 renderScenes()
+renderInspectorOverview()
