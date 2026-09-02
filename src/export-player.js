@@ -135,7 +135,8 @@ To publish:
 Upload the entire folder to any static web host, including GitHub Pages,
 Netlify, Cloudflare Pages, Amazon S3, or your existing web server.
 
-Keep index.html, tour.json, player.js, styles.css, three.module.js, and the
-videos folder together. Opening index.html directly from a file:// address
-is blocked by browser security; serve it over HTTP instead.
+Keep index.html, tour.json, player.js, styles.css, three.module.js,
+three.core.min.js, and the videos folder together. Opening index.html
+directly from a file:// address is blocked by browser security; serve it
+over HTTP instead.
 `
