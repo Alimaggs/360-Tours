@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import JSZip from 'jszip'
 import threeSource from '../node_modules/three/build/three.module.min.js?raw'
+import threeCoreSource from '../node_modules/three/build/three.core.min.js?raw'
 import { exportReadme, playerHtml, playerScript, playerStyles } from './export-player.js'
 import './style.css'
 
@@ -669,6 +670,7 @@ async function exportTour() {
   zip.file('styles.css', playerStyles)
   zip.file('player.js', playerScript)
   zip.file('three.module.js', threeSource)
+  zip.file('three.core.min.js', threeCoreSource)
   zip.file('tour.json', JSON.stringify(manifest, null, 2))
   zip.file('README.txt', exportReadme)
 
