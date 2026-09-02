@@ -350,7 +350,7 @@ function selectHotspot(id) {
   const hotspot = activeHotspot()
   if (!hotspot) return
 
-  $('#inspector-empty').hidden = true
+  $('#inspector-empty').hidden = false
   $('#inspector-content').hidden = false
   const isInfo = hotspot.type === 'info'
   $('#interaction-settings-title').textContent = isInfo ? 'Info settings' : 'Hotspot settings'
@@ -365,6 +365,7 @@ function selectHotspot(id) {
   $('#hotspot-time').value = formatTime(hotspot.time)
   $('#hotspot-position').textContent = `${Math.round(hotspot.yaw)}°, ${Math.round(hotspot.pitch)}°`
   if (!isInfo) populateSceneSelect($('#hotspot-target'), hotspot.targetSceneId)
+  renderInspectorOverview()
   renderHotspots()
 }
 
@@ -392,7 +393,7 @@ function renderInspectorOverview() {
     ? 'Select an interaction below or directly in the viewer.'
     : 'This scene has no interactions yet. Add a hotspot or info point above the viewer.'
   $('#interaction-index').innerHTML = scene.hotspots.map((interaction) => `
-    <div class="interaction-index-row">
+    <div class="interaction-index-row ${interaction.id === state.activeHotspotId ? 'selected' : ''}">
       <button class="interaction-index-edit" data-inspector-interaction="${interaction.id}" aria-label="Edit ${escapeHtml(interaction.label)}">
         <i>${interaction.type === 'info' ? 'i' : '→'}</i>
         <span><strong>${escapeHtml(interaction.label)}</strong><small>${interaction.type === 'info' ? 'Info point' : 'Linked hotspot'}</small></span>
@@ -767,6 +768,7 @@ function bindEvents() {
 
   $('#hotspot-label').addEventListener('input', (event) => {
     activeHotspot().label = event.target.value
+    renderInspectorOverview()
     renderHotspots()
     renderScenes()
   })
