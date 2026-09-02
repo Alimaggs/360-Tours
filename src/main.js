@@ -16,7 +16,7 @@ const icons = {
   chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
   close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg>',
-  camera360: '<svg class="camera-360-icon" viewBox="0 0 40 40" aria-hidden="true"><path class="orbit" d="M5 17.5C6.4 10.9 12.4 6 20 6c6.1 0 11.3 3.2 13.8 7.8m0 0-4.7-1.3m4.7 1.3.6-4.8M35 22.5C33.6 29.1 27.6 34 20 34c-6.1 0-11.3-3.2-13.8-7.8m0 0 4.7 1.3m-4.7-1.3L5.6 31"/><rect class="lens-body" x="9" y="13" width="22" height="14" rx="7"/><circle class="lens" cx="20" cy="20" r="5"/><circle class="lens-core" cx="20" cy="20" r="2"/><path class="lens-glint" d="m22.5 16.5 2 1.5"/></svg>',
+  camera360: '<svg class="camera-360-icon" viewBox="0 0 40 40" aria-hidden="true"><path class="rotation-arrow" d="M7.3 16A13.5 13.5 0 0 1 31 11.3m0 0-4.8-.2m4.8.2-1.4 4.6M32.7 24A13.5 13.5 0 0 1 9 28.7m0 0 4.8.2M9 28.7l1.4-4.6"/><circle class="aperture-ring" cx="20" cy="20" r="9"/><path class="aperture-blades" d="m20 11 4.8 8.2-9.5-.1m12.5-4.3L23 23l-4.7-8.2m9.5 10.4-9.5-.1L23 17m-10.8 8.2L17 17l4.7 8.2m-9.5-10.4 4.7 8.2 4.8-8.2"/><circle class="aperture-core" cx="20" cy="20" r="2.2"/></svg>',
 }
 
 const state = {

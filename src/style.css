@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Squada+One&display=swap');
 
 :root {
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -36,14 +36,13 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 }
 
 .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-size: 21px; font-weight: 700; letter-spacing: -.5px; }
-.brand-mark { width: 42px; height: 42px; display: grid; place-items: center; background: var(--ice); border-radius: 50%; }
-.brand-mark svg { width: 38px; height: 38px; stroke-width: 1.7; }
-.camera-360-icon .orbit { stroke: var(--accent); stroke-width: 2.2; }
-.camera-360-icon .lens-body { fill: var(--aqua); stroke: var(--ink); }
-.camera-360-icon .lens { fill: var(--ink); stroke: var(--ink); }
-.camera-360-icon .lens-core { fill: var(--lime); stroke: var(--lime); }
-.camera-360-icon .lens-glint { stroke: #fff; stroke-width: 1.5; }
-.brand-name { font-family: 'Black Ops One', Impact, sans-serif; font-size: 18px; font-weight: 400; letter-spacing: -.35px; }
+.brand-mark { width: 42px; height: 42px; display: grid; place-items: center; background: var(--accent); border-radius: 50%; }
+.brand-mark svg { width: 38px; height: 38px; stroke: #fff; stroke-width: 1.8; }
+.camera-360-icon .rotation-arrow { stroke-width: 2.1; }
+.camera-360-icon .aperture-ring { fill: none; stroke-width: 1.6; }
+.camera-360-icon .aperture-blades { fill: none; stroke-width: 1.3; }
+.camera-360-icon .aperture-core { fill: #fff; stroke: #fff; }
+.brand-name { font-family: 'Squada One', Impact, sans-serif; font-size: 21px; font-weight: 400; letter-spacing: .1px; }
 .brand-name span { color: var(--accent); }
 .project-title { text-align: center; display: flex; align-items: center; justify-content: center; gap: 13px; }
 .project-title input { border: 1px solid transparent; border-radius: 6px; color: var(--ink); text-align: right; font-weight: 600; width: 140px; padding: 5px; background: transparent; }
@@ -131,7 +130,7 @@ h2, h3, p { margin: 0; }
 .empty-viewer::after { width: 650px; height: 220px; }
 .empty-viewer[hidden] { display: none; }
 .empty-viewer > * { position: relative; z-index: 1; }
-.empty-orbit { width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: #ffffff66; border: 1px solid #ffffff88; margin-bottom: 16px; }
+.empty-orbit { width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--accent); border: 1px solid #dc5b0e; margin-bottom: 16px; box-shadow: 0 8px 24px #b5481638; }
 .empty-orbit svg { width: 58px; height: 58px; }
 .empty-viewer h1 { font-size: 25px; letter-spacing: -.7px; margin: 0 0 9px; }
 .empty-viewer p { font-size: 12px; color: #29474a; max-width: 380px; margin-bottom: 20px; }
