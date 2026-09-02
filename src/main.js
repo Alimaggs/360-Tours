@@ -15,7 +15,7 @@ const icons = {
   more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
   close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
-  camera360: '<svg class="camera-360-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 12h14v11H7z"/><path d="m7 12 3-3h14l-3 3M21 14l5-2v11l-5-2"/><circle cx="14" cy="17.5" r="3.2"/><path d="M6.5 7A13 13 0 0 1 23 5.5m0 0-3-2m3 2-3 2M25.5 26A13 13 0 0 1 9 27.5m0 0 3 2m-3-2 3-2"/></svg>',
+  camera360: '<svg class="camera-360-icon" viewBox="0 0 40 40" aria-hidden="true"><path class="orbit" d="M5 17.5C6.4 10.9 12.4 6 20 6c6.1 0 11.3 3.2 13.8 7.8m0 0-4.7-1.3m4.7 1.3.6-4.8M35 22.5C33.6 29.1 27.6 34 20 34c-6.1 0-11.3-3.2-13.8-7.8m0 0 4.7 1.3m-4.7-1.3L5.6 31"/><rect class="lens-body" x="9" y="13" width="22" height="14" rx="7"/><circle class="lens" cx="20" cy="20" r="5"/><circle class="lens-core" cx="20" cy="20" r="2"/><path class="lens-glint" d="m22.5 16.5 2 1.5"/></svg>',
 }
 
 const state = {
