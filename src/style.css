@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Squada+One&display=swap');
 
 :root {
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -43,7 +43,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .camera-360-icon .lens { fill: var(--ink); stroke: var(--ink); }
 .camera-360-icon .lens-core { fill: var(--lime); stroke: var(--lime); }
 .camera-360-icon .lens-glint { stroke: #fff; stroke-width: 1.5; }
-.brand-name { font-family: 'Black Ops One', Impact, sans-serif; font-size: 18px; font-weight: 400; letter-spacing: -.35px; }
+.brand-name { font-family: 'Squada One', Impact, sans-serif; font-size: 21px; font-weight: 400; letter-spacing: .1px; }
 .brand-name span { color: var(--accent); }
 .project-title { text-align: center; display: flex; align-items: center; justify-content: center; gap: 13px; }
 .project-title input { border: 1px solid transparent; border-radius: 6px; color: var(--ink); text-align: right; font-weight: 600; width: 140px; padding: 5px; background: transparent; }
