@@ -15,6 +15,7 @@ const icons = {
   more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
   close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg>',
   camera360: '<svg class="camera-360-icon" viewBox="0 0 40 40" aria-hidden="true"><path class="orbit" d="M5 17.5C6.4 10.9 12.4 6 20 6c6.1 0 11.3 3.2 13.8 7.8m0 0-4.7-1.3m4.7 1.3.6-4.8M35 22.5C33.6 29.1 27.6 34 20 34c-6.1 0-11.3-3.2-13.8-7.8m0 0 4.7 1.3m-4.7-1.3L5.6 31"/><rect class="lens-body" x="9" y="13" width="22" height="14" rx="7"/><circle class="lens" cx="20" cy="20" r="5"/><circle class="lens-core" cx="20" cy="20" r="2"/><path class="lens-glint" d="m22.5 16.5 2 1.5"/></svg>',
 }
 
@@ -359,6 +360,7 @@ function selectHotspot(id) {
   $('#hotspot-description-wrap').hidden = !isInfo
   $('#hotspot-target-wrap').hidden = isInfo
   $('#hotspot-icon-wrap').hidden = isInfo
+  $('#delete-hotspot').textContent = isInfo ? 'Delete info point' : 'Delete hotspot'
   if (!isInfo) $('#hotspot-icon').value = hotspot.icon
   $('#hotspot-time').value = formatTime(hotspot.time)
   $('#hotspot-position').textContent = `${Math.round(hotspot.yaw)}°, ${Math.round(hotspot.pitch)}°`
@@ -390,15 +392,33 @@ function renderInspectorOverview() {
     ? 'Select an interaction below or directly in the viewer.'
     : 'This scene has no interactions yet. Add a hotspot or info point above the viewer.'
   $('#interaction-index').innerHTML = scene.hotspots.map((interaction) => `
-    <button data-inspector-interaction="${interaction.id}">
-      <i>${interaction.type === 'info' ? 'i' : '→'}</i>
-      <span><strong>${escapeHtml(interaction.label)}</strong><small>${interaction.type === 'info' ? 'Info point' : 'Linked hotspot'}</small></span>
-      ${icons.chevron}
-    </button>
+    <div class="interaction-index-row">
+      <button class="interaction-index-edit" data-inspector-interaction="${interaction.id}" aria-label="Edit ${escapeHtml(interaction.label)}">
+        <i>${interaction.type === 'info' ? 'i' : '→'}</i>
+        <span><strong>${escapeHtml(interaction.label)}</strong><small>${interaction.type === 'info' ? 'Info point' : 'Linked hotspot'}</small></span>
+        ${icons.chevron}
+      </button>
+      <button class="interaction-index-delete" data-delete-interaction="${interaction.id}" aria-label="Delete ${escapeHtml(interaction.label)}" title="Delete">
+        ${icons.trash}
+      </button>
+    </div>
   `).join('')
   document.querySelectorAll('[data-inspector-interaction]').forEach((button) => {
     button.addEventListener('click', () => selectHotspot(button.dataset.inspectorInteraction))
   })
+  document.querySelectorAll('[data-delete-interaction]').forEach((button) => {
+    button.addEventListener('click', () => deleteInteraction(button.dataset.deleteInteraction))
+  })
+}
+
+function deleteInteraction(id) {
+  const scene = activeScene()
+  const interaction = scene?.hotspots.find((item) => item.id === id)
+  if (!scene || !interaction) return
+  scene.hotspots = scene.hotspots.filter((item) => item.id !== id)
+  closeInspector()
+  renderScenes()
+  notify(`${interaction.type === 'info' ? 'Info point' : 'Hotspot'} deleted`)
 }
 
 function playVideo() {
@@ -759,13 +779,7 @@ function bindEvents() {
     activeHotspot().icon = event.target.value
     renderHotspots()
   })
-  $('#delete-hotspot').addEventListener('click', () => {
-    const scene = activeScene()
-    scene.hotspots = scene.hotspots.filter((hotspot) => hotspot.id !== state.activeHotspotId)
-    closeInspector()
-    renderScenes()
-    notify('Hotspot deleted')
-  })
+  $('#delete-hotspot').addEventListener('click', () => deleteInteraction(state.activeHotspotId))
 
   video.addEventListener('loadedmetadata', () => {
     const scene = activeScene()
