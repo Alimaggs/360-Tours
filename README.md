@@ -65,6 +65,29 @@ getComputedStyle(document.documentElement).getPropertyValue('--showround-theme')
 
 The wordmark uses the `--brand-font` custom property in `src/style.css`, which defaults to Bungee, the closest freely licensed face to the Chaos Created wordmark. To use the licensed Chaos Created display face instead, drop the web font files into `public/fonts`, uncomment the `@font-face` block at the top of that file, and point `--brand-font` at the family name.
 
+## Releases
+
+The megaphone button in the top bar shows the version and what changed in it.
+An orange dot appears on that button until the current version has been
+opened, remembered per browser in `localStorage`.
+
+`src/changelog.js` is the source of truth. Every push that users would notice
+gets a new entry at the top:
+
+```js
+{
+  version: '0.2.0',
+  date: '2026-09-17',
+  title: 'Short headline',
+  notes: ['One sentence per change, written for the person using Showround.'],
+}
+```
+
+Then set the same version in `package.json` so the two agree. Write the notes
+in terms of what someone can now do rather than which files moved, and skip
+releases that only contain refactoring or docs, since a what's new box with
+nothing in it for the reader is worse than no box.
+
 ## Development
 
 ```sh

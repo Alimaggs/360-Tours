@@ -56,6 +56,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .save-state { display: flex; align-items: center; gap: 6px; color: #929b97; font-size: 11px; }
 .save-state i { width: 6px; height: 6px; border-radius: 50%; background: var(--aqua); }
 .top-actions { display: flex; align-items: center; gap: 9px; }
+.whats-new-button { position: relative; }
+.whats-new-button.unseen::after { content: ''; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); border: 2px solid var(--panel); }
 
 .button { height: 38px; border: 1px solid var(--line); border-radius: 8px; padding: 0 16px; background: #fff; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: .18s ease; }
 .button:hover { transform: translateY(-1px); box-shadow: 0 5px 15px #24372f12; }
@@ -233,6 +235,16 @@ dialog form { margin: 0; }
 dialog h2 { font-size: 20px; margin-bottom: 5px; }
 dialog p { color: #87918c; font-size: 11px; margin-bottom: 22px; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+.release-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+.release { padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.release:last-child { padding-bottom: 0; border-bottom: 0; }
+.release-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.release-version { padding: 2px 7px; border-radius: 20px; background: #f3f5f4; color: #66726c; font-size: 9px; font-weight: 700; }
+.release.current .release-version { background: #fff1e7; color: var(--accent-dark); }
+.release-head time { color: #9da6a1; font-size: 9px; }
+.release h3 { color: var(--ink); font-size: 13px; margin-bottom: 8px; }
+.release ul { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px; }
+.release li { color: #66726c; font-size: 11px; line-height: 1.5; }
 .toast { position: fixed; z-index: 100; left: 50%; bottom: 25px; transform: translate(-50%, 15px); padding: 10px 16px; border-radius: 8px; color: #fff; background: #20372f; box-shadow: 0 10px 30px #14251e44; font-size: 11px; opacity: 0; pointer-events: none; transition: .2s; }
 .toast.visible { opacity: 1; transform: translate(-50%, 0); }
 

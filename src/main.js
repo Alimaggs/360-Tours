@@ -4,6 +4,7 @@ import threeSource from '../node_modules/three/build/three.module.min.js?raw'
 import threeCoreSource from '../node_modules/three/build/three.core.min.js?raw'
 import { embedHtml, exportReadme, playerHtml, playerScript, playerStyles } from './export-player.js'
 import { defaultHotspotIcon, defaultInfoIcon, pinIcons, pinIconSvg } from './pin-icons.js'
+import { currentRelease, releases } from './changelog.js'
 import './style.css'
 
 const icons = {
@@ -14,6 +15,7 @@ const icons = {
   hotspot: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>',
   export: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12m0 0 5-5m-5 5-5-5M5 19h14"/></svg>',
   embed: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.6 4.5l-3.2 15"/></svg>',
+  megaphone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.6v4.8a1.6 1.6 0 0 0 1.6 1.6h2.2l7.6 4.3V3.7L7.8 8H5.6A1.6 1.6 0 0 0 4 9.6z"/><path d="M7.8 16v3a2 2 0 0 0 4 0v-.9M19 9.4a4.2 4.2 0 0 1 0 5.2"/></svg>',
   more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
   close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
@@ -50,6 +52,7 @@ document.querySelector('#app').innerHTML = `
       <button class="button secondary" id="preview-tour">Preview</button>
       <button class="button secondary" id="embed-tour">${icons.embed} Embed</button>
       <button class="button primary" id="export-tour">${icons.export} Export tour</button>
+      <button class="icon-button whats-new-button" id="whats-new" aria-label="What's new in Showround">${icons.megaphone}</button>
       <button class="icon-button" aria-label="More options">${icons.more}</button>
     </div>
   </header>
@@ -194,6 +197,17 @@ document.querySelector('#app').innerHTML = `
       </div>
     </form>
   </dialog>
+  <dialog id="whats-new-dialog">
+    <form method="dialog">
+      <div class="dialog-icon">${icons.megaphone}</div>
+      <h2>What's new</h2>
+      <p>You are running Showround <strong id="whats-new-version"></strong>.</p>
+      <div class="release-list" id="release-list"></div>
+      <div class="dialog-actions">
+        <button class="button primary" value="default">Got it</button>
+      </div>
+    </form>
+  </dialog>
   <div class="toast" id="toast"></div>
 `
 
@@ -225,6 +239,56 @@ function escapeHtml(value) {
   const element = document.createElement('span')
   element.textContent = value
   return element.innerHTML
+}
+
+const SEEN_VERSION_KEY = 'showround:last-seen-version'
+
+function lastSeenVersion() {
+  try {
+    return localStorage.getItem(SEEN_VERSION_KEY)
+  } catch {
+    return null
+  }
+}
+
+function markReleaseSeen() {
+  try {
+    localStorage.setItem(SEEN_VERSION_KEY, currentRelease.version)
+  } catch {
+    // Private browsing and blocked site data both throw here. The badge just
+    // reappears next visit, which is harmless.
+  }
+}
+
+function formatReleaseDate(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function renderReleases() {
+  $('#whats-new-version').textContent = `v${currentRelease.version}`
+  $('#release-list').innerHTML = releases.map((release, index) => `
+    <section class="release${index === 0 ? ' current' : ''}">
+      <div class="release-head">
+        <span class="release-version">v${escapeHtml(release.version)}</span>
+        <time datetime="${escapeAttr(release.date)}">${escapeHtml(formatReleaseDate(release.date))}</time>
+      </div>
+      <h3>${escapeHtml(release.title)}</h3>
+      <ul>${release.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul>
+    </section>
+  `).join('')
+}
+
+function refreshWhatsNewBadge() {
+  $('#whats-new').classList.toggle('unseen', lastSeenVersion() !== currentRelease.version)
+}
+
+function openWhatsNew() {
+  renderReleases()
+  markReleaseSeen()
+  refreshWhatsNewBadge()
+  $('#whats-new-dialog').showModal()
 }
 
 function escapeAttr(value) {
@@ -964,6 +1028,7 @@ function bindEvents() {
   bindIconPicker($('#new-hotspot-icon-picker'), (icon) => { state.pendingIcon = icon })
   bindIconPicker($('#new-info-icon-picker'), (icon) => { state.pendingIcon = icon })
   $('#embed-tour').addEventListener('click', openEmbedDialog)
+  $('#whats-new').addEventListener('click', openWhatsNew)
   $('#copy-embed').addEventListener('click', copyEmbedCode)
   ;['#embed-base', '#embed-width', '#embed-height'].forEach((selector) => {
     $(selector).addEventListener('input', refreshEmbedCode)
@@ -1003,5 +1068,6 @@ function bindEvents() {
 
 state.renderer = createViewer()
 bindEvents()
+refreshWhatsNewBadge()
 renderScenes()
 renderInspectorOverview()
