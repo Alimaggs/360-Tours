@@ -7,6 +7,14 @@
 
 export const releases = [
   {
+    version: '0.3.0',
+    date: '2026-09-03',
+    title: 'A front door for Showround',
+    notes: [
+      'showround.app now has a home page, and the editor has moved to showround.app/app. Worth updating your bookmark.',
+    ],
+  },
+  {
     version: '0.2.0',
     date: '2026-09-03',
     title: 'Pick up where you left off',
@@ -22,7 +30,6 @@ export const releases = [
       'Scenes can now be 360° photos as well as video, and a single tour can mix the two freely.',
       'Hotspots and info points take an icon from a set of twelve, chosen when you place one and changeable afterwards.',
       'A new Embed button gives you the code to drop a tour into any web page, with the picture filling the frame.',
-      'Chaos360 is now Showround, with a new mark and wordmark.',
     ],
   },
 ]

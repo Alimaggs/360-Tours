@@ -39,7 +39,7 @@ const state = {
 
 document.querySelector('#app').innerHTML = `
   <header class="topbar">
-    <a class="brand" href="#" aria-label="Showround home">
+    <a class="brand" href="../" aria-label="Showround home">
       <span class="brand-mark">${icons.camera360}</span>
       <span class="brand-lockup">
         <span class="brand-name">SHOW<span>ROUND</span></span>

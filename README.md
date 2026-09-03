@@ -65,6 +65,23 @@ getComputedStyle(document.documentElement).getPropertyValue('--showround-theme')
 
 The wordmark uses the `--brand-font` custom property in `src/style.css`, which defaults to Bungee, the closest freely licensed face to the Chaos Created wordmark. To use the licensed Chaos Created display face instead, drop the web font files into `public/fonts`, uncomment the `@font-face` block at the top of that file, and point `--brand-font` at the family name.
 
+## Pages
+
+The build has two entry points, wired up in `vite.config.js`:
+
+| Path | Source | What it is |
+| --- | --- | --- |
+| `/` | `index.html` plus `src/landing.css` | Marketing landing page, no JavaScript |
+| `/app/` | `app/index.html` plus `src/main.js` | The editor |
+
+They are one project on purpose. It stays a single build and a single deploy,
+sessions will not have to cross an origin once accounts exist, and it keeps
+the root path free for published tour URLs such as `/t/<slug>`.
+
+The landing page repeats the design tokens rather than importing the editor's
+stylesheet, so that a 1.4MB app bundle is not pulled onto a static page. If
+they drift, lift the `:root` block into a file both stylesheets import.
+
 ## Releases
 
 The megaphone button in the top bar shows the version and what changed in it.

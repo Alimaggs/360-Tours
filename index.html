@@ -3,13 +3,100 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="theme-color" content="#f17022" />
-    <meta name="description" content="Create interactive tours from 360 degree videos and photos." />
-    <title>Showround — 360° Tour Editor</title>
+    <meta name="description" content="Showround turns 360° photos and video into guided virtual tours you can embed anywhere. Built in the browser, by Chaos Created." />
+    <meta property="og:title" content="Showround — 360° virtual tours" />
+    <meta property="og:description" content="Turn 360° photos and video into a tour people can walk through. Build it in the browser, then embed it anywhere." />
+    <meta property="og:type" content="website" />
+    <title>Showround — 360° virtual tours</title>
+    <link rel="stylesheet" href="./src/landing.css" />
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <header class="bar">
+      <a class="brand" href="./" aria-label="Showround home">
+        <span class="brand-mark">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <g transform="rotate(-15 20 20)">
+              <path d="M29.83 13.12A12 12 0 1 0 20 32" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" />
+              <path d="M19.5 26.3 27.6 32 19.5 37.7Z" fill="currentColor" />
+            </g>
+            <circle cx="20" cy="20" r="3.6" fill="currentColor" />
+          </svg>
+        </span>
+        <span class="brand-lockup">
+          <span class="brand-name">SHOW<span>ROUND</span></span>
+          <span class="brand-endorsement">by Chaos Created</span>
+        </span>
+      </a>
+      <a class="button primary" href="./app/">Open the editor</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">360° virtual tours</p>
+        <h1>Show the place, not the floor plan</h1>
+        <p class="lede">
+          Turn 360° photos and video into a tour someone can actually walk
+          through. Build it in your browser, then drop it into any web page.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary large" href="./app/">Open the editor</a>
+          <a class="button ghost large" href="#how">See how it works</a>
+        </div>
+        <p class="footnote">No account needed. Nothing to install.</p>
+      </section>
+
+      <section class="features">
+        <article>
+          <h2>Photos and video, together</h2>
+          <p>
+            Drop in equirectangular stills or 360° footage. One tour can mix
+            both, so a quick photo of the utility room sits happily next to a
+            walkthrough of the garden.
+          </p>
+        </article>
+        <article>
+          <h2>Point the way</h2>
+          <p>
+            Place hotspots to move between rooms, and info points to explain
+            what someone is looking at. Twelve icons to choose from, so a door
+            looks like a door.
+          </p>
+        </article>
+        <article>
+          <h2>Embed it anywhere</h2>
+          <p>
+            Export a self-contained tour and host it yourself, or copy the
+            embed code straight into a property listing, a venue page, or your
+            own site.
+          </p>
+        </article>
+      </section>
+
+      <section class="how" id="how">
+        <h2>Three steps</h2>
+        <ol>
+          <li>
+            <h3>Upload your 360° media</h3>
+            <p>Each photo or clip becomes a scene in the tour.</p>
+          </li>
+          <li>
+            <h3>Link the scenes together</h3>
+            <p>Drop a hotspot where a visitor should be able to move on.</p>
+          </li>
+          <li>
+            <h3>Export or embed</h3>
+            <p>Take the whole tour as a folder, or paste an iframe into a page.</p>
+          </li>
+        </ol>
+        <a class="button primary large" href="./app/">Start building</a>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <p>Showround, by <a href="https://chaoscreated.co.uk" rel="noopener">Chaos Created</a></p>
+      <a href="./app/">Open the editor</a>
+    </footer>
   </body>
 </html>
