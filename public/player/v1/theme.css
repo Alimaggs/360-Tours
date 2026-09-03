@@ -1,0 +1,30 @@
+/* Showround player theme — version 1
+ *
+ * Served from https://showround.app/player/v1/theme.css and loaded by every
+ * exported tour AFTER its own bundled styles.css. Rules here therefore
+ * override the bundled ones, which is what lets a published tour pick up a
+ * design change without being re-exported.
+ *
+ * Rules of the road:
+ *
+ * 1. This file is optional by design. A tour whose copy of it fails to load
+ *    must still look correct, so styles.css always carries the complete
+ *    design and this file only ever adjusts it. Never move a rule here that
+ *    the player cannot render without.
+ *
+ * 2. Only restyle markup that already exists in older exports. CSS cannot
+ *    add elements, so anything structural needs a new player version rather
+ *    than a rule here.
+ *
+ * 3. Breaking changes get a new version directory. Old tours keep pointing
+ *    at the version they shipped with, so v1 must keep working indefinitely.
+ *
+ * The custom property below is a deliberate no-op that makes it easy to
+ * confirm this layer loaded:
+ *
+ *   getComputedStyle(document.documentElement).getPropertyValue('--showround-theme')
+ */
+
+:root {
+  --showround-theme: "v1";
+}

@@ -27,6 +27,40 @@ The Embed button in the editor writes the iframe snippet for you. Enter the
 URL the uploaded tour folder will live at, adjust the size if you want, then
 copy the code.
 
+## Updating the player's look after export
+
+Exported tours are self-contained, which means a design change would normally
+never reach a tour someone already published. To get around that, both player
+pages load a small theme stylesheet from this site immediately after their own
+bundled `styles.css`:
+
+```html
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="https://showround.app/player/v1/theme.css">
+```
+
+That file lives at `public/player/v1/theme.css`. Because it loads second it
+wins on the cascade, so editing it restyles every tour already pointing at
+that version.
+
+Three constraints keep this safe:
+
+- **It has to stay optional.** `styles.css` always carries the complete
+  design, and the theme layer only adjusts it. A tour whose copy fails to
+  load still renders correctly, so a published tour cannot be broken by this
+  site going down, and exports still work on a private network.
+- **CSS only restyles markup that already exists.** Older exports have older
+  markup, so anything structural needs a new player version instead.
+- **Breaking changes get a new version directory.** `playerThemeVersion` in
+  `src/export-player.js` sets what new exports point at. Old tours keep the
+  version they shipped with, so `v1` has to keep working indefinitely.
+
+To confirm the layer loaded on a given tour:
+
+```js
+getComputedStyle(document.documentElement).getPropertyValue('--showround-theme')
+```
+
 ## Branding
 
 The wordmark uses the `--brand-font` custom property in `src/style.css`, which defaults to Bungee, the closest freely licensed face to the Chaos Created wordmark. To use the licensed Chaos Created display face instead, drop the web font files into `public/fonts`, uncomment the `@font-face` block at the top of that file, and point `--brand-font` at the family name.

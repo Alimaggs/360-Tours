@@ -1,3 +1,12 @@
+// Exported tours load their own bundled styles.css first, then this file on
+// top of it, so a design change can reach already-published tours without a
+// re-export. The version is pinned per export: old tours keep the version they
+// shipped with, and anything structural gets a new one rather than editing v1.
+// A tour whose copy fails to load must still render correctly, so styles.css
+// always carries the complete design and this layer only adjusts it.
+export const playerThemeVersion = 'v1'
+export const playerThemeUrl = `https://showround.app/player/${playerThemeVersion}/theme.css`
+
 export const playerHtml = `<!doctype html>
 <html lang="en">
 <head>
@@ -6,6 +15,7 @@ export const playerHtml = `<!doctype html>
   <meta name="theme-color" content="#f17022">
   <title>Showround Tour</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="${playerThemeUrl}">
 </head>
 <body>
   <header>
@@ -41,6 +51,7 @@ export const embedHtml = `<!doctype html>
   <meta name="theme-color" content="#f17022">
   <title>Showround Tour</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="${playerThemeUrl}">
 </head>
 <body class="embed">
   <h1 id="tour-name" class="visually-hidden">360° Tour</h1>
@@ -205,7 +216,14 @@ chrome removed, so it fills whatever iframe you give it. The Embed button
 in the editor writes the iframe code for you.
 
 Keep index.html, embed.html, tour.json, player.js, styles.css,
-three.module.js, three.core.min.js, and the media folder together. Opening index.html
+three.module.js, three.core.min.js, and the media folder together.
+
+About the theme stylesheet:
+Both pages load a small theme file from showround.app after their own
+styles.css, which lets the player's look be refreshed without re-exporting
+the tour. It is optional. If it cannot be reached the tour still renders
+correctly from its bundled styles, so the folder above remains complete on
+its own and will work on a private network or behind a firewall. Opening index.html
 directly from a file:// address is blocked by browser security; serve it
 over HTTP instead.
 `
