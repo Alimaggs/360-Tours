@@ -56,11 +56,13 @@ Sevalla settings:
 | --- | --- |
 | Build command | `npm run build` |
 | Publish directory | `dist` |
-| Node version | read from `engines.node` in `package.json` |
+| Root directory | leave empty (the project is at the repo root) |
+| Node version | 22 |
 
-Sevalla builds with Nixpacks, which takes the Node version from the
-`engines` field, so the build matches local development without any extra
-dashboard configuration.
+Static sites take the Node version from a dropdown on the Sevalla form, not
+from `package.json`. The `engines` field is kept anyway so the expected
+version is recorded in the repo and npm warns on a mismatch locally, but it
+is the dropdown that decides the build image. Pick the same major version.
 
 Connect the repository in the Sevalla dashboard and pick the branch to
 deploy. Pushes to that branch then rebuild automatically.
