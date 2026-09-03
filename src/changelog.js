@@ -7,6 +7,14 @@
 
 export const releases = [
   {
+    version: '0.2.0',
+    date: '2026-09-03',
+    title: 'Pick up where you left off',
+    notes: [
+      'You can now import a tour you exported earlier and carry on editing it, scenes, hotspots, icons and all.',
+    ],
+  },
+  {
     version: '0.1.0',
     date: '2026-09-03',
     title: 'Showround is live',

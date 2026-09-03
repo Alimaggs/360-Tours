@@ -15,6 +15,7 @@ const icons = {
   hotspot: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>',
   export: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12m0 0 5-5m-5 5-5-5M5 19h14"/></svg>',
   embed: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.6 4.5l-3.2 15"/></svg>',
+  import: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V8m0 0 5 5m-5-5-5 5M5 4h14"/></svg>',
   megaphone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.6v4.8a1.6 1.6 0 0 0 1.6 1.6h2.2l7.6 4.3V3.7L7.8 8H5.6A1.6 1.6 0 0 0 4 9.6z"/><path d="M7.8 16v3a2 2 0 0 0 4 0v-.9M19 9.4a4.2 4.2 0 0 1 0 5.2"/></svg>',
   more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
@@ -32,6 +33,7 @@ const state = {
   previewMode: false,
   pendingPoint: null,
   pendingIcon: defaultHotspotIcon,
+  pendingImport: null,
   renderer: null,
 }
 
@@ -51,6 +53,7 @@ document.querySelector('#app').innerHTML = `
     <div class="top-actions">
       <button class="button secondary" id="preview-tour">Preview</button>
       <button class="button secondary" id="embed-tour">${icons.embed} Embed</button>
+      <button class="button secondary" id="import-tour">${icons.import} Import</button>
       <button class="button primary" id="export-tour">${icons.export} Export tour</button>
       <button class="icon-button whats-new-button" id="whats-new" aria-label="What's new in Showround">${icons.megaphone}</button>
       <button class="icon-button" aria-label="More options">${icons.more}</button>
@@ -67,6 +70,7 @@ document.querySelector('#app').innerHTML = `
         <button class="icon-button compact" id="add-scenes" aria-label="Add media">${icons.plus}</button>
       </div>
       <input id="media-input" type="file" accept="video/*,image/*" multiple hidden>
+      <input id="import-input" type="file" accept=".zip,application/zip" hidden>
       <div class="scene-list" id="scene-list"></div>
       <button class="upload-card" id="upload-card">
         <span class="upload-icon">${icons.upload}</span>
@@ -194,6 +198,17 @@ document.querySelector('#app').innerHTML = `
       <div class="dialog-actions">
         <button class="button secondary" value="cancel">Close</button>
         <button class="button primary" id="copy-embed" value="default">Copy code</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="replace-dialog">
+    <form method="dialog">
+      <div class="dialog-icon">${icons.import}</div>
+      <h2>Replace this tour?</h2>
+      <p id="replace-copy">Importing opens the tour from the file. Anything currently open will be discarded, and there is no way back to it.</p>
+      <div class="dialog-actions">
+        <button class="button secondary" value="cancel">Keep editing</button>
+        <button class="button primary" id="confirm-replace" value="default">Import anyway</button>
       </div>
     </form>
   </dialog>
@@ -922,6 +937,109 @@ async function copyEmbedCode(event) {
   }
 }
 
+const MIME_BY_EXTENSION = {
+  mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', m4v: 'video/x-m4v', ogv: 'video/ogg',
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif',
+}
+
+function mimeForFile(name) {
+  return MIME_BY_EXTENSION[name.split('.').pop()?.toLowerCase()] || ''
+}
+
+// Exports before manifest version 2 stored a single video path under "video"
+// and had no scene kind, so treat anything without a kind as video.
+function manifestSource(scene) {
+  return scene.src || scene.video || ''
+}
+
+// Anything thrown here is worth putting in front of the person importing.
+// Failures from inside JSZip are not: they describe zip internals and even
+// link to the library's docs, so those get a plain message instead.
+function importError(message) {
+  const error = new Error(message)
+  error.friendly = true
+  return error
+}
+
+async function readTourZip(file) {
+  const zip = await JSZip.loadAsync(file)
+  const manifestEntry = zip.file('tour.json')
+  if (!manifestEntry) throw importError('That zip does not contain a Showround tour')
+
+  const manifest = JSON.parse(await manifestEntry.async('string'))
+  if (!Array.isArray(manifest.scenes) || !manifest.scenes.length) {
+    throw importError('That tour has no scenes in it')
+  }
+
+  const scenes = []
+  for (const scene of manifest.scenes) {
+    const path = manifestSource(scene).replace(/^\.\//, '')
+    const entry = path && zip.file(path)
+    if (!entry) throw importError(`The tour is missing ${scene.fileName || 'a media file'}`)
+
+    const fileName = scene.fileName || path.split('/').pop()
+    const blob = await entry.async('blob')
+    const media = new File([blob], fileName, { type: blob.type || mimeForFile(fileName) })
+    scenes.push({
+      id: scene.id || uid(),
+      kind: scene.kind === 'photo' ? 'photo' : 'video',
+      name: scene.name || fileName.replace(/\.[^.]+$/, ''),
+      fileName,
+      file: media,
+      url: URL.createObjectURL(media),
+      thumbnail: '',
+      duration: Number(scene.duration) || 0,
+      hotspots: Array.isArray(scene.hotspots) ? scene.hotspots : [],
+    })
+  }
+
+  return { name: manifest.name, entrySceneId: manifest.entrySceneId, scenes }
+}
+
+async function applyImportedTour(file) {
+  const button = $('#import-tour')
+  button.disabled = true
+  button.textContent = 'Opening tour…'
+  try {
+    const tour = await readTourZip(file)
+    state.scenes.forEach((scene) => URL.revokeObjectURL(scene.url))
+    video.pause()
+    video.removeAttribute('src')
+    state.scenes = tour.scenes
+    state.activeSceneId = null
+    state.activeHotspotId = null
+    state.projectName = tour.name || 'Imported tour'
+    $('#project-name').value = state.projectName
+
+    for (const scene of state.scenes) {
+      scene.thumbnail = scene.kind === 'photo'
+        ? await createPhotoThumbnail(scene.url)
+        : await createThumbnail(scene.file, scene.url)
+    }
+
+    const entry = state.scenes.find((scene) => scene.id === tour.entrySceneId) || state.scenes[0]
+    renderScenes()
+    selectScene(entry.id)
+    notify(`Opened ${state.projectName}`)
+  } catch (error) {
+    notify(error.friendly ? error.message : 'That file is not a Showround tour export')
+  } finally {
+    button.disabled = false
+    button.innerHTML = `${icons.import} Import`
+  }
+}
+
+function requestImport(file) {
+  if (!file) return
+  if (!state.scenes.length) {
+    applyImportedTour(file)
+    return
+  }
+  state.pendingImport = file
+  $('#replace-copy').textContent = `Importing opens the tour from the file. The ${state.scenes.length} scene${state.scenes.length === 1 ? '' : 's'} currently open will be discarded, and there is no way back.`
+  $('#replace-dialog').showModal()
+}
+
 async function exportTour() {
   if (!state.scenes.length) {
     notify('Add scenes before exporting')
@@ -1007,6 +1125,18 @@ function bindEvents() {
   })
   $('#project-name').addEventListener('input', (event) => { state.projectName = event.target.value })
   $('#export-tour').addEventListener('click', exportTour)
+  const importInput = $('#import-input')
+  $('#import-tour').addEventListener('click', () => importInput.click())
+  importInput.addEventListener('change', () => {
+    requestImport(importInput.files[0])
+    importInput.value = ''
+  })
+  $('#confirm-replace').addEventListener('click', () => {
+    const file = state.pendingImport
+    state.pendingImport = null
+    if (file) applyImportedTour(file)
+  })
+  $('#replace-dialog').addEventListener('close', () => { state.pendingImport = null })
   $('#preview-tour').addEventListener('click', togglePreview)
 
   $('#hotspot-label').addEventListener('input', (event) => {
