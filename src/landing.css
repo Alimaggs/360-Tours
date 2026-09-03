@@ -12,6 +12,7 @@
   --accent-dark: #d95a0c;
   --aqua: #62c2cc;
   --ice: #e4f6f8;
+  --lime: #eeff66;
   --brand-font: 'Bungee', 'Arial Black', Impact, sans-serif;
   font-family: 'DM Sans', system-ui, sans-serif;
   color: var(--ink);
@@ -72,15 +73,40 @@ main { max-width: 980px; margin: 0 auto; padding: 0 28px; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
 .footnote { font-size: 13px; color: #9aa4a0; }
 
+/* Photographs are dressed as a scene inside the player, pins and all, so a
+   still image reads as a tour rather than as decoration. */
+.viewer { position: relative; margin: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: #e6ebe8; box-shadow: 0 20px 50px #24372f1f; }
+.viewer img { display: block; width: 100%; height: auto; }
+.showcase { margin-bottom: 76px; }
+
+.pin { position: absolute; width: 40px; height: 40px; display: grid; place-items: center; border: 3px solid #fff; border-radius: 50%; background: var(--lime); color: var(--ink); box-shadow: 0 5px 18px #14251e5c; transform: translate(-50%, -50%); }
+.pin svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.pin-info { background: var(--aqua); }
+/* Starts just inside the circle's right edge so the square left corner tucks
+   under it, leaving the icon clear. The label paints above the pin, so it
+   cannot start any further left without covering the icon. */
+.pin-label { position: absolute; left: 50%; top: 50%; transform: translate(14px, -50%); padding: 6px 11px 6px 13px; border-radius: 0 7px 7px 0; background: #1d2c27e0; color: #fff; font-size: 11px; font-weight: 500; white-space: nowrap; pointer-events: none; }
+/* For a pin near the right edge, where a right-hand label would be clipped by
+   the frame. Mirrored, with the padding keeping the text clear of the icon. */
+.pin.label-left .pin-label { left: auto; right: 50%; transform: translate(14px, -50%); padding: 6px 24px 6px 11px; border-radius: 7px 0 0 7px; }
+
+.viewer-hint { position: absolute; left: 16px; bottom: 16px; padding: 7px 12px; border-radius: 20px; background: #101817c4; color: #fff; font-size: 11px; }
+
+@media (max-width: 560px) {
+  .pin { width: 32px; height: 32px; border-width: 2px; }
+  .pin svg { width: 16px; height: 16px; }
+  .pin-label { display: none; }
+}
+
 .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; padding-bottom: 76px; }
 .features article { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 26px 24px; }
 .features h2 { font-size: 17px; margin-bottom: 10px; }
 .features p { font-size: 14px; color: var(--muted); }
 
-.how { padding-bottom: 84px; }
+.how { padding-bottom: 84px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 44px; align-items: center; }
 .how h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin-bottom: 22px; }
-.how ol { counter-reset: step; list-style: none; margin: 0 0 32px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 26px; }
-.how li { counter-increment: step; position: relative; padding-top: 46px; }
+.how ol { counter-reset: step; list-style: none; margin: 0 0 32px; padding: 0; display: flex; flex-direction: column; gap: 22px; }
+.how li { counter-increment: step; position: relative; padding-left: 48px; min-height: 34px; }
 .how li::before {
   content: counter(step);
   position: absolute;
@@ -115,8 +141,14 @@ main { max-width: 980px; margin: 0 auto; padding: 0 28px; }
 .foot a { color: var(--accent-dark); text-decoration: none; font-weight: 600; }
 .foot a:hover { text-decoration: underline; }
 
+@media (max-width: 860px) {
+  .how { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .how-shot { order: -1; }
+}
+
 @media (max-width: 620px) {
   .bar { padding: 14px 18px; }
   main, .foot { padding-left: 18px; padding-right: 18px; }
   .hero { padding: 52px 0 48px; }
+  .showcase { margin-bottom: 52px; }
 }
