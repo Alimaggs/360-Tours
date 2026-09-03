@@ -541,19 +541,37 @@ function renderHotspots() {
       }
     })
   })
+  measureHotspotCards()
   positionHotspots()
   updateTimeline()
+}
+
+// Measured once per render rather than per frame: positionHotspots runs on
+// every animation frame, and reading a width there would force a layout each
+// time. Card content only changes on a re-render, so this stays in step.
+function measureHotspotCards() {
+  document.querySelectorAll('[data-hotspot]').forEach((button) => {
+    const card = button.querySelector('.info-card') || button.querySelector(':scope > b')
+    button.dataset.cardWidth = card ? Math.ceil(card.getBoundingClientRect().width) : 0
+  })
 }
 
 function positionHotspots() {
   const scene = activeScene()
   if (!scene || !state.renderer) return
 
+  const bounds = $('#viewer').getBoundingClientRect()
   document.querySelectorAll('[data-hotspot]').forEach((button) => {
     const hotspot = scene.hotspots.find((item) => item.id === button.dataset.hotspot)
     const point = state.renderer.worldToScreen(hotspot.yaw, hotspot.pitch)
     button.style.transform = `translate(${point.x}px, ${point.y}px)`
     button.classList.toggle('behind', !point.visible)
+    // Prefer the right, flip only when that overflows and the left has room.
+    // If neither side fits the card is wider than the viewer, so leave it right.
+    const cardWidth = Number(button.dataset.cardWidth) || 0
+    const noRoomRight = point.x + cardWidth > bounds.width - 16
+    const noRoomLeft = point.x - cardWidth < 16
+    button.classList.toggle('flipped', noRoomRight && !noRoomLeft)
   })
 }
 

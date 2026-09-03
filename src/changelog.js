@@ -7,6 +7,14 @@
 
 export const releases = [
   {
+    version: '0.4.1',
+    date: '2026-09-03',
+    title: 'Notes stay in the picture',
+    notes: [
+      'A note attached near the edge of the picture now opens inwards instead of running off the side. This applies to published tours too.',
+    ],
+  },
+  {
     version: '0.4.0',
     date: '2026-09-03',
     title: 'Tidier info points',
