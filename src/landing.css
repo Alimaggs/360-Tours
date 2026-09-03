@@ -79,22 +79,60 @@ main { max-width: 980px; margin: 0 auto; padding: 0 28px; }
 .viewer img { display: block; width: 100%; height: auto; }
 .showcase { margin-bottom: 76px; }
 
-.pin { position: absolute; width: 40px; height: 40px; display: grid; place-items: center; border: 3px solid #fff; border-radius: 50%; background: var(--lime); color: var(--ink); box-shadow: 0 5px 18px #14251e5c; transform: translate(-50%, -50%); }
-.pin svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.pin-info { background: var(--aqua); }
-/* Starts just inside the circle's right edge so the square left corner tucks
-   under it, leaving the icon clear. The label paints above the pin, so it
-   cannot start any further left without covering the icon. */
-.pin-label { position: absolute; left: 50%; top: 50%; transform: translate(14px, -50%); padding: 6px 11px 6px 13px; border-radius: 0 7px 7px 0; background: #1d2c27e0; color: #fff; font-size: 11px; font-weight: 500; white-space: nowrap; pointer-events: none; }
-/* For a pin near the right edge, where a right-hand label would be clipped by
-   the frame. Mirrored, with the padding keeping the text clear of the icon. */
-.pin.label-left .pin-label { left: auto; right: 50%; transform: translate(14px, -50%); padding: 6px 24px 6px 11px; border-radius: 7px 0 0 7px; }
+/* The pin itself is a zero-size anchor at the point being marked. Its two
+   children are positioned against that point: the label slides underneath the
+   circle, and the circle sits above it on z-index, so the join is hidden
+   behind the disc exactly as it is in the player. */
+.pin { position: absolute; width: 0; height: 0; }
+
+.pin-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink);
+  box-shadow: 0 5px 18px #14251e5c;
+}
+.pin-dot svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.pin-info .pin-dot { background: var(--aqua); }
+
+/* The disc reaches 23px either side of the anchor. The label's square end sits
+   at 14px, so 9px of it hides behind the disc, and the padding puts the first
+   letter 7px clear of the disc's edge rather than touching it. */
+.pin-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  transform: translate(14px, -50%);
+  padding: 8px 14px 8px 16px;
+  border-radius: 0 9px 9px 0;
+  background: #1d2c27e6;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 5px 16px #14251e40;
+  pointer-events: none;
+}
+
+/* Mirrored, for a pin close enough to the right edge that a right-hand label
+   would be clipped by the frame. */
+.pin.label-left .pin-label { left: auto; right: 0; transform: translate(-14px, -50%); padding: 8px 16px 8px 14px; border-radius: 9px 0 0 9px; }
 
 .viewer-hint { position: absolute; left: 16px; bottom: 16px; padding: 7px 12px; border-radius: 20px; background: #101817c4; color: #fff; font-size: 11px; }
 
 @media (max-width: 560px) {
-  .pin { width: 32px; height: 32px; border-width: 2px; }
-  .pin svg { width: 16px; height: 16px; }
+  .pin-dot { width: 32px; height: 32px; border-width: 2px; }
+  .pin-dot svg { width: 16px; height: 16px; }
   .pin-label { display: none; }
 }
 
