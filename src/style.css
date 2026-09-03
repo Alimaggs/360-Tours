@@ -1,4 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Squada+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bungee&display=swap');
+
+/* Swap in the licensed Chaos Created display face by dropping the files into
+   public/fonts and pointing --brand-font at the family name below. */
+/* @font-face { font-family: 'Carbon Block'; src: url('/fonts/carbon-block.woff2') format('woff2'); font-weight: 400; font-display: swap; } */
 
 :root {
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -15,6 +19,7 @@
   --aqua: #62c2cc;
   --ice: #e4f6f8;
   --lime: #eeff66;
+  --brand-font: 'Bungee', 'Arial Black', Impact, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -35,15 +40,16 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   z-index: 10;
 }
 
-.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-size: 21px; font-weight: 700; letter-spacing: -.5px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.brand-lockup { display: flex; flex-direction: column; gap: 3px; }
 .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; background: var(--accent); border-radius: 50%; }
-.brand-mark svg { width: 38px; height: 38px; stroke: #fff; stroke-width: 1.8; }
-.camera-360-icon .rotation-arrow { stroke-width: 2.1; }
-.camera-360-icon .aperture-ring { fill: none; stroke-width: 1.6; }
-.camera-360-icon .aperture-blades { fill: none; stroke-width: 1.3; }
-.camera-360-icon .aperture-core { fill: #fff; stroke: #fff; }
-.brand-name { font-family: 'Squada One', Impact, sans-serif; font-size: 21px; font-weight: 400; letter-spacing: .1px; }
+.brand-mark { color: #fff; }
+.brand-mark svg { width: 38px; height: 38px; }
+.orbit-mark .orbit-arc { fill: none; stroke: currentColor; stroke-width: 5.5; }
+.orbit-mark .orbit-head, .orbit-mark .orbit-core { fill: currentColor; stroke: none; }
+.brand-name { font-family: var(--brand-font); font-size: 16px; font-weight: 400; letter-spacing: -.3px; text-transform: uppercase; line-height: 1; }
 .brand-name span { color: var(--accent); }
+.brand-endorsement { font-size: 9.5px; font-weight: 600; color: var(--muted); letter-spacing: .02em; line-height: 1; }
 .project-title { text-align: center; display: flex; align-items: center; justify-content: center; gap: 13px; }
 .project-title input { border: 1px solid transparent; border-radius: 6px; color: var(--ink); text-align: right; font-weight: 600; width: 140px; padding: 5px; background: transparent; }
 .project-title input:hover, .project-title input:focus { border-color: var(--line); outline: none; background: #fafbfa; }
@@ -143,6 +149,8 @@ h2, h3, p { margin: 0; }
 .viewer-hotspot > span { width: 35px; height: 35px; border: 3px solid #fff; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: var(--lime); font-size: 17px; font-weight: 700; box-shadow: 0 4px 14px #14251e75; transform: translate(-50%, -50%); }
 .viewer-hotspot b { opacity: 0; transform: translate(-12px, -50%); color: #fff; background: #1d2c27d9; padding: 5px 9px 5px 16px; border-radius: 0 6px 6px 0; font-size: 10px; white-space: nowrap; transition: .15s; }
 .viewer-hotspot:hover b, .viewer-hotspot.selected b { opacity: 1; }
+.viewer-hotspot > span .pin-icon { width: 19px; height: 19px; }
+.interaction-index-edit > i .pin-icon { width: 15px; height: 15px; }
 .viewer-hotspot.selected > span { box-shadow: 0 0 0 5px #ffffff45, 0 4px 14px #14251e75; }
 .viewer-hotspot.info-point > span:first-child { background: var(--aqua); }
 .viewer-hotspot .info-card { min-width: 130px; max-width: 220px; transform: translate(-12px, -50%); padding: 7px 10px 7px 16px; border-radius: 0 7px 7px 0; color: #fff; background: #1d2c27e8; text-align: left; box-shadow: 0 5px 16px #14251e45; }
@@ -156,6 +164,7 @@ kbd { font: inherit; color: #bbc6c1; margin-left: 8px; }
 .view-hint.visible { opacity: 1; transform: translate(-50%, 0); }
 
 .timeline-panel { background: var(--panel); border-top: 1px solid var(--line); padding: 16px 22px; }
+.timeline-panel.still .player-controls { display: none; }
 .player-controls { display: grid; grid-template-columns: 30px 35px 1fr 35px; align-items: center; gap: 9px; font-size: 9px; color: #79837e; }
 .play-button { width: 27px; height: 27px; border-radius: 50%; border: 0; display: grid; place-items: center; color: var(--ink); background: var(--aqua); cursor: pointer; }
 .play-button:disabled { opacity: .35; }
@@ -205,6 +214,13 @@ kbd { font: inherit; color: #bbc6c1; margin-left: 8px; }
 .inspector-content textarea, dialog textarea { height: auto; min-height: 90px; padding: 10px; line-height: 1.45; resize: vertical; }
 .inspector-content input:focus, .inspector-content select:focus, .inspector-content textarea:focus, dialog input:focus, dialog select:focus, dialog textarea:focus { border-color: var(--aqua); box-shadow: 0 0 0 3px var(--ice); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.pin-field { margin-bottom: 16px; }
+.pin-field-title { display: block; color: #65706b; font-size: 10px; font-weight: 600; margin-bottom: 7px; }
+.icon-picker { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.icon-choice { height: 34px; padding: 0; display: grid; place-items: center; border: 1px solid #dce2df; border-radius: 8px; background: #fff; color: #55605b; cursor: pointer; transition: .15s ease; }
+.icon-choice:hover { border-color: var(--aqua); background: #f7fdfd; }
+.icon-choice.selected { border-color: var(--accent); background: #fff1e7; color: var(--accent-dark); box-shadow: 0 0 0 2px #f1702226; }
+.icon-choice svg { width: 18px; height: 18px; }
 .position-readout { display: flex; align-items: center; justify-content: space-between; padding: 11px; border-radius: 7px; background: #f6f8f7; color: #7d8782; font-size: 9px; }
 .position-readout code { color: #4d5b55; font-size: 9px; }
 .delete-button { width: 100%; border: 0; border-top: 1px solid var(--line); padding: 17px 0 0; margin-top: 22px; background: transparent; color: #b64806; font-size: 10px; font-weight: 600; cursor: pointer; }

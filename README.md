@@ -1,6 +1,35 @@
-# Chaos360
+# Showround
 
-Chaos360 is a browser-based editor for turning 360-degree videos into interactive tours. Upload scenes, connect them with hotspots, add information points, preview the journey, and export a self-contained tour package.
+_by Chaos Created_
+
+Showround is a browser-based editor for turning 360-degree videos and photos into interactive tours. Upload scenes, connect them with hotspots, add information points, preview the journey, and export a self-contained tour package.
+
+## Media
+
+Scenes can be 360-degree video (MP4, WebM, MOV) or 360-degree stills (JPG, PNG, WebP), and a single tour can mix both. Stills are shown without the playback transport, and their interactions stay on screen for as long as the scene is open. Equirectangular source images larger than the GPU texture limit are downscaled to fit before they are uploaded to the sphere.
+
+## Interactions
+
+Hotspots move a visitor to another scene; info points reveal a note in place.
+Both carry an icon chosen from a shared set of twelve (defined in
+`src/pin-icons.js`), picked when the interaction is created and changeable
+later in the inspector. The same definitions are injected into the exported
+player, so a published tour draws the identical icons.
+
+## Embedding
+
+Every export contains `embed.html` alongside `index.html`. It is the same
+tour with the page chrome removed: the scene picker floats over the top right
+of the image, the transport bar appears only for video scenes, and a small
+credit links back to showround.app. It fills whatever iframe it is given.
+
+The Embed button in the editor writes the iframe snippet for you. Enter the
+URL the uploaded tour folder will live at, adjust the size if you want, then
+copy the code.
+
+## Branding
+
+The wordmark uses the `--brand-font` custom property in `src/style.css`, which defaults to Bungee, the closest freely licensed face to the Chaos Created wordmark. To use the licensed Chaos Created display face instead, drop the web font files into `public/fonts`, uncomment the `@font-face` block at the top of that file, and point `--brand-font` at the family name.
 
 ## Development
 

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local 360 test panoramas (see test-media/ATTRIBUTION.txt)
+test-media

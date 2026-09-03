@@ -2,7 +2,8 @@ import * as THREE from 'three'
 import JSZip from 'jszip'
 import threeSource from '../node_modules/three/build/three.module.min.js?raw'
 import threeCoreSource from '../node_modules/three/build/three.core.min.js?raw'
-import { exportReadme, playerHtml, playerScript, playerStyles } from './export-player.js'
+import { embedHtml, exportReadme, playerHtml, playerScript, playerStyles } from './export-player.js'
+import { defaultHotspotIcon, defaultInfoIcon, pinIcons, pinIconSvg } from './pin-icons.js'
 import './style.css'
 
 const icons = {
@@ -12,11 +13,12 @@ const icons = {
   upload: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 15v4h14v-4"/></svg>',
   hotspot: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>',
   export: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12m0 0 5-5m-5 5-5-5M5 19h14"/></svg>',
+  embed: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.6 4.5l-3.2 15"/></svg>',
   more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
   close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg>',
-  camera360: '<svg class="camera-360-icon" viewBox="0 0 40 40" aria-hidden="true"><path class="rotation-arrow" d="M7.3 16A13.5 13.5 0 0 1 31 11.3m0 0-4.8-.2m4.8.2-1.4 4.6M32.7 24A13.5 13.5 0 0 1 9 28.7m0 0 4.8.2M9 28.7l1.4-4.6"/><circle class="aperture-ring" cx="20" cy="20" r="9"/><path class="aperture-blades" d="m20 11 4.8 8.2-9.5-.1m12.5-4.3L23 23l-4.7-8.2m9.5 10.4-9.5-.1L23 17m-10.8 8.2L17 17l4.7 8.2m-9.5-10.4 4.7 8.2 4.8-8.2"/><circle class="aperture-core" cx="20" cy="20" r="2.2"/></svg>',
+  camera360: '<svg class="orbit-mark" viewBox="0 0 40 40" aria-hidden="true"><g transform="rotate(-15 20 20)"><path class="orbit-arc" d="M29.83 13.12A12 12 0 1 0 20 32"/><path class="orbit-head" d="M19.5 26.3 27.6 32 19.5 37.7Z"/></g><circle class="orbit-core" cx="20" cy="20" r="3.6"/></svg>',
 }
 
 const state = {
@@ -27,14 +29,18 @@ const state = {
   addingType: null,
   previewMode: false,
   pendingPoint: null,
+  pendingIcon: defaultHotspotIcon,
   renderer: null,
 }
 
 document.querySelector('#app').innerHTML = `
   <header class="topbar">
-    <a class="brand" href="#" aria-label="Chaos360 home">
+    <a class="brand" href="#" aria-label="Showround home">
       <span class="brand-mark">${icons.camera360}</span>
-      <span class="brand-name">CHAOS<span>360</span></span>
+      <span class="brand-lockup">
+        <span class="brand-name">SHOW<span>ROUND</span></span>
+        <span class="brand-endorsement">by Chaos Created</span>
+      </span>
     </a>
     <div class="project-title">
       <input id="project-name" value="${state.projectName}" aria-label="Project name">
@@ -42,6 +48,7 @@ document.querySelector('#app').innerHTML = `
     </div>
     <div class="top-actions">
       <button class="button secondary" id="preview-tour">Preview</button>
+      <button class="button secondary" id="embed-tour">${icons.embed} Embed</button>
       <button class="button primary" id="export-tour">${icons.export} Export tour</button>
       <button class="icon-button" aria-label="More options">${icons.more}</button>
     </div>
@@ -54,13 +61,13 @@ document.querySelector('#app').innerHTML = `
           <span class="eyebrow">Tour content</span>
           <h2>Scenes <span id="scene-count">0</span></h2>
         </div>
-        <button class="icon-button compact" id="add-scenes" aria-label="Add videos">${icons.plus}</button>
+        <button class="icon-button compact" id="add-scenes" aria-label="Add media">${icons.plus}</button>
       </div>
-      <input id="video-input" type="file" accept="video/*" multiple hidden>
+      <input id="media-input" type="file" accept="video/*,image/*" multiple hidden>
       <div class="scene-list" id="scene-list"></div>
       <button class="upload-card" id="upload-card">
         <span class="upload-icon">${icons.upload}</span>
-        <span><strong>Add 360° videos</strong><small>MP4, WebM or MOV</small></span>
+        <span><strong>Add 360° media</strong><small>MP4, WebM, MOV, JPG or PNG</small></span>
       </button>
       <div class="sidebar-tip">
         <span>${icons.hotspot}</span>
@@ -83,11 +90,11 @@ document.querySelector('#app').innerHTML = `
         <div id="viewer"></div>
         <div class="empty-viewer" id="empty-viewer">
           <span class="empty-orbit">${icons.camera360}</span>
-          <h1>Turn videos into a journey</h1>
-          <p>Upload your 360° footage, then connect scenes with interactive hotspots.</p>
-          <button class="button primary large" id="empty-upload">${icons.upload} Upload videos</button>
+          <h1>Turn 360° media into a journey</h1>
+          <p>Upload 360° videos or photos, then connect scenes with interactive hotspots.</p>
+          <button class="button primary large" id="empty-upload">${icons.upload} Upload media</button>
         </div>
-        <div class="drop-overlay" id="drop-overlay">${icons.upload}<strong>Drop videos to add scenes</strong></div>
+        <div class="drop-overlay" id="drop-overlay">${icons.upload}<strong>Drop videos or photos to add scenes</strong></div>
         <div class="hotspot-layer" id="hotspot-layer"></div>
         <div class="add-instruction" id="add-instruction">Click anywhere to place the hotspot <kbd>Esc</kbd> to cancel</div>
         <div class="view-hint" id="view-hint"><span>↔</span> Drag to look around</div>
@@ -103,7 +110,7 @@ document.querySelector('#app').innerHTML = `
         <div class="timeline-details">
           <div class="scene-meta">
             <span class="scene-thumb mini" id="timeline-thumb"><span>360°</span></span>
-            <div><strong id="timeline-title">Choose a scene</strong><small id="timeline-info">Upload video to get started</small></div>
+            <div><strong id="timeline-title">Choose a scene</strong><small id="timeline-info">Upload media to get started</small></div>
           </div>
           <div class="hotspot-summary"><span id="hotspot-count">0 interactions</span><small>Interactions remain visible throughout the scene</small></div>
         </div>
@@ -125,9 +132,10 @@ document.querySelector('#app').innerHTML = `
         <label><span id="interaction-label-title">Label</span><input id="hotspot-label" maxlength="60" placeholder="e.g. Enter the kitchen"></label>
         <label id="hotspot-description-wrap" hidden>Information<textarea id="hotspot-description" maxlength="280" rows="5" placeholder="Add a couple of sentences about this point."></textarea></label>
         <label id="hotspot-target-wrap">Link to scene<select id="hotspot-target"></select></label>
-        <div class="field-row">
-          <label>Placed at<input id="hotspot-time" type="text" readonly></label>
-          <label id="hotspot-icon-wrap">Icon<select id="hotspot-icon"><option value="arrow">Arrow</option><option value="door">Door</option></select></label>
+        <label>Placed at<input id="hotspot-time" type="text" readonly></label>
+        <div class="pin-field">
+          <span class="pin-field-title">Icon</span>
+          <div class="icon-picker" id="hotspot-icon-picker"></div>
         </div>
         <div class="position-readout"><span>View position</span><code id="hotspot-position">0°, 0°</code></div>
         <button class="delete-button" id="delete-hotspot">Delete hotspot</button>
@@ -142,6 +150,10 @@ document.querySelector('#app').innerHTML = `
       <p>Choose where visitors go when they select this point.</p>
       <label>Hotspot label<input id="new-hotspot-label" maxlength="50" placeholder="e.g. Go to the kitchen" autofocus></label>
       <label>Destination scene<select id="new-hotspot-target"></select></label>
+      <div class="pin-field">
+        <span class="pin-field-title">Icon</span>
+        <div class="icon-picker" id="new-hotspot-icon-picker"></div>
+      </div>
       <div class="dialog-actions">
         <button class="button secondary" value="cancel">Cancel</button>
         <button class="button primary" id="confirm-hotspot" value="default">Create hotspot</button>
@@ -155,9 +167,30 @@ document.querySelector('#app').innerHTML = `
       <p>Add context visitors can reveal without leaving the scene.</p>
       <label>Title<input id="new-info-title" maxlength="60" placeholder="e.g. Original oak staircase"></label>
       <label>Information<textarea id="new-info-description" maxlength="280" rows="5" placeholder="Add a couple of sentences about this point."></textarea></label>
+      <div class="pin-field">
+        <span class="pin-field-title">Icon</span>
+        <div class="icon-picker" id="new-info-icon-picker"></div>
+      </div>
       <div class="dialog-actions">
         <button class="button secondary" value="cancel">Cancel</button>
         <button class="button primary" id="confirm-info" value="default">Create info point</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="embed-dialog">
+    <form method="dialog">
+      <div class="dialog-icon">${icons.embed}</div>
+      <h2>Embed this tour</h2>
+      <p>Export the tour, upload the whole folder to your web host, then paste this code where you want the tour to appear.</p>
+      <label>Where the tour folder will live<input id="embed-base" placeholder="https://example.com/tours/my-tour" autocomplete="off" spellcheck="false"></label>
+      <div class="field-row">
+        <label>Width<input id="embed-width" value="100%" autocomplete="off"></label>
+        <label>Height<input id="embed-height" value="600" autocomplete="off"></label>
+      </div>
+      <label>Embed code<textarea id="embed-code" rows="4" readonly spellcheck="false"></textarea></label>
+      <div class="dialog-actions">
+        <button class="button secondary" value="cancel">Close</button>
+        <button class="button primary" id="copy-embed" value="default">Copy code</button>
       </div>
     </form>
   </dialog>
@@ -194,12 +227,83 @@ function escapeHtml(value) {
   return element.innerHTML
 }
 
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/"/g, '&quot;')
+}
+
+function iconFor(interaction) {
+  return interaction?.icon || (interaction?.type === 'info' ? defaultInfoIcon : defaultHotspotIcon)
+}
+
+function renderIconPicker(container, selected) {
+  container.innerHTML = Object.entries(pinIcons).map(([name, icon]) => `
+    <button type="button" class="icon-choice ${name === selected ? 'selected' : ''}" data-icon="${name}" title="${icon.label}" aria-label="${icon.label}" aria-pressed="${name === selected}">${pinIconSvg(name)}</button>
+  `).join('')
+}
+
+function bindIconPicker(container, onPick) {
+  container.addEventListener('click', (event) => {
+    const choice = event.target.closest('[data-icon]')
+    if (!choice) return
+    event.preventDefault()
+    renderIconPicker(container, choice.dataset.icon)
+    onPick(choice.dataset.icon)
+  })
+}
+
 function notify(message) {
   const toast = $('#toast')
   toast.textContent = message
   toast.classList.add('visible')
   clearTimeout(notify.timeout)
   notify.timeout = setTimeout(() => toast.classList.remove('visible'), 2200)
+}
+
+function isPhotoScene(scene) {
+  return scene?.kind === 'photo'
+}
+
+function sceneMeta(scene) {
+  return isPhotoScene(scene) ? 'Photo' : formatTime(scene.duration)
+}
+
+function createPhotoThumbnail(url) {
+  return new Promise((resolve) => {
+    const image = new Image()
+    image.addEventListener('load', () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 240
+      canvas.height = 120
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/jpeg', 0.72))
+    }, { once: true })
+    image.addEventListener('error', () => resolve(''), { once: true })
+    image.src = url
+  })
+}
+
+function loadPhotoTexture(url, maxSize) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.addEventListener('load', () => {
+      let source = image
+      const largest = Math.max(image.naturalWidth, image.naturalHeight)
+      if (maxSize && largest > maxSize) {
+        const scale = maxSize / largest
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(image.naturalWidth * scale)
+        canvas.height = Math.round(image.naturalHeight * scale)
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+        source = canvas
+      }
+      const texture = new THREE.Texture(source)
+      texture.colorSpace = THREE.SRGBColorSpace
+      texture.needsUpdate = true
+      resolve(texture)
+    }, { once: true })
+    image.addEventListener('error', () => reject(new Error('Image could not be loaded')), { once: true })
+    image.src = url
+  })
 }
 
 function createThumbnail(file, url) {
@@ -224,16 +328,18 @@ function createThumbnail(file, url) {
 }
 
 async function addFiles(files) {
-  const videos = [...files].filter((file) => file.type.startsWith('video/'))
-  if (!videos.length) {
-    notify('Choose one or more video files')
+  const media = [...files].filter((file) => file.type.startsWith('video/') || file.type.startsWith('image/'))
+  if (!media.length) {
+    notify('Choose one or more 360° videos or photos')
     return
   }
 
-  for (const file of videos) {
+  for (const file of media) {
     const url = URL.createObjectURL(file)
+    const kind = file.type.startsWith('image/') ? 'photo' : 'video'
     const scene = {
       id: uid(),
+      kind,
       name: file.name.replace(/\.[^.]+$/, ''),
       fileName: file.name,
       file,
@@ -243,12 +349,12 @@ async function addFiles(files) {
       hotspots: [],
     }
     state.scenes.push(scene)
-    scene.thumbnail = await createThumbnail(file, url)
+    scene.thumbnail = kind === 'photo' ? await createPhotoThumbnail(url) : await createThumbnail(file, url)
   }
 
   if (!state.activeSceneId) selectScene(state.scenes[0].id)
   renderScenes()
-  notify(`${videos.length} scene${videos.length === 1 ? '' : 's'} added`)
+  notify(`${media.length} scene${media.length === 1 ? '' : 's'} added`)
 }
 
 function renderScenes() {
@@ -256,12 +362,12 @@ function renderScenes() {
   $('#scene-list').innerHTML = state.scenes.map((scene, index) => `
     <button class="scene-item ${scene.id === state.activeSceneId ? 'active' : ''}" data-scene="${scene.id}">
       <span class="scene-thumb" ${scene.thumbnail ? `style="background-image:url('${scene.thumbnail}')"` : ''}>
-        <span>360°</span>
+        <span>${isPhotoScene(scene) ? 'Photo' : '360°'}</span>
         <b>${index + 1}</b>
       </span>
       <span class="scene-copy">
         <strong>${escapeHtml(scene.name)}</strong>
-        <small>${formatTime(scene.duration)} · ${scene.hotspots.length} interaction${scene.hotspots.length === 1 ? '' : 's'}</small>
+        <small>${sceneMeta(scene)} · ${scene.hotspots.length} interaction${scene.hotspots.length === 1 ? '' : 's'}</small>
       </span>
       ${icons.more}
     </button>
@@ -277,20 +383,26 @@ function selectScene(id) {
   const scene = state.scenes.find((item) => item.id === id)
   if (!scene) return
 
+  const photo = isPhotoScene(scene)
   state.activeSceneId = id
   state.activeHotspotId = null
   state.addingType = null
   video.pause()
-  video.src = scene.url
-  video.load()
+  if (!photo) {
+    video.src = scene.url
+    video.load()
+  }
+  state.renderer?.showScene(scene)
+  $('#timeline-panel').classList.toggle('still', photo)
   $('#active-scene-name').textContent = scene.name
   $('#timeline-title').textContent = scene.name
   $('#timeline-info').textContent = scene.fileName
   $('#timeline-thumb').style.backgroundImage = scene.thumbnail ? `url('${scene.thumbnail}')` : ''
+  $('#timeline-thumb').querySelector('span').textContent = photo ? 'Photo' : '360°'
   $('#empty-viewer').hidden = true
   $('#add-hotspot').disabled = state.previewMode
   $('#add-info').disabled = state.previewMode
-  $('#play').disabled = false
+  $('#play').disabled = photo
   $('#view-hint').classList.add('visible')
   setTimeout(() => $('#view-hint').classList.remove('visible'), 3200)
   closeInspector()
@@ -309,7 +421,7 @@ function renderHotspots() {
 
   $('#hotspot-layer').innerHTML = scene.hotspots.map((hotspot) => `
     <button class="viewer-hotspot ${hotspot.type === 'info' ? 'info-point' : ''} ${hotspot.id === state.activeHotspotId ? 'selected' : ''}" data-hotspot="${hotspot.id}" title="${escapeHtml(hotspot.label)}">
-      <span>${hotspot.type === 'info' ? 'i' : hotspot.icon === 'door' ? '⌂' : '→'}</span>
+      <span>${pinIconSvg(iconFor(hotspot))}</span>
       ${hotspot.type === 'info'
         ? `<span class="info-card"><b>${escapeHtml(hotspot.label)}</b><p>${escapeHtml(hotspot.description || '')}</p></span>`
         : `<b>${escapeHtml(hotspot.label)}</b>`}
@@ -359,9 +471,8 @@ function selectHotspot(id) {
   $('#hotspot-description').value = hotspot.description || ''
   $('#hotspot-description-wrap').hidden = !isInfo
   $('#hotspot-target-wrap').hidden = isInfo
-  $('#hotspot-icon-wrap').hidden = isInfo
   $('#delete-hotspot').textContent = isInfo ? 'Delete info point' : 'Delete hotspot'
-  if (!isInfo) $('#hotspot-icon').value = hotspot.icon
+  renderIconPicker($('#hotspot-icon-picker'), iconFor(hotspot))
   $('#hotspot-time').value = formatTime(hotspot.time)
   $('#hotspot-position').textContent = `${Math.round(hotspot.yaw)}°, ${Math.round(hotspot.pitch)}°`
   if (!isInfo) populateSceneSelect($('#hotspot-target'), hotspot.targetSceneId)
@@ -395,7 +506,7 @@ function renderInspectorOverview() {
   $('#interaction-index').innerHTML = scene.hotspots.map((interaction) => `
     <div class="interaction-index-row ${interaction.id === state.activeHotspotId ? 'selected' : ''}">
       <button class="interaction-index-edit" data-inspector-interaction="${interaction.id}" aria-label="Edit ${escapeHtml(interaction.label)}">
-        <i>${interaction.type === 'info' ? 'i' : '→'}</i>
+        <i>${pinIconSvg(iconFor(interaction))}</i>
         <span><strong>${escapeHtml(interaction.label)}</strong><small>${interaction.type === 'info' ? 'Info point' : 'Linked hotspot'}</small></span>
         ${icons.chevron}
       </button>
@@ -423,6 +534,7 @@ function deleteInteraction(id) {
 }
 
 function playVideo() {
+  if (isPhotoScene(activeScene())) return
   video.play().catch(() => {
     notify('Playback was blocked. Select play to continue.')
   })
@@ -477,7 +589,7 @@ function beginAddHotspot() {
   if (!activeScene()) return
   if (state.scenes.length < 2) {
     notify('Add another scene before creating a link')
-    $('#video-input').click()
+    $('#media-input').click()
     return
   }
   beginPlacement('hotspot')
@@ -507,10 +619,14 @@ function openHotspotDialog(event) {
   const bounds = $('#viewer').getBoundingClientRect()
   state.pendingPoint = state.renderer.screenToAngles(event.clientX - bounds.left, event.clientY - bounds.top)
   if (state.addingType === 'info') {
+    state.pendingIcon = defaultInfoIcon
+    renderIconPicker($('#new-info-icon-picker'), state.pendingIcon)
     $('#new-info-title').value = ''
     $('#new-info-description').value = ''
     $('#info-dialog').showModal()
   } else {
+    state.pendingIcon = defaultHotspotIcon
+    renderIconPicker($('#new-hotspot-icon-picker'), state.pendingIcon)
     populateSceneSelect($('#new-hotspot-target'))
     $('#new-hotspot-label').value = ''
     $('#hotspot-dialog').showModal()
@@ -531,8 +647,8 @@ function confirmHotspot(event) {
     type: 'hotspot',
     label,
     targetSceneId,
-    time: video.currentTime,
-    icon: 'arrow',
+    time: isPhotoScene(activeScene()) ? 0 : video.currentTime,
+    icon: state.pendingIcon || defaultHotspotIcon,
     ...state.pendingPoint,
   }
   activeScene().hotspots.push(hotspot)
@@ -557,7 +673,8 @@ function confirmInfo(event) {
     type: 'info',
     label,
     description,
-    time: video.currentTime,
+    icon: state.pendingIcon || defaultInfoIcon,
+    time: isPhotoScene(activeScene()) ? 0 : video.currentTime,
     ...state.pendingPoint,
   }
   activeScene().hotspots.push(infoPoint)
@@ -570,14 +687,15 @@ function confirmInfo(event) {
 
 function updateTimeline() {
   const scene = activeScene()
-  const duration = Number.isFinite(video.duration) ? video.duration : scene?.duration || 0
+  const photo = isPhotoScene(scene)
+  const duration = photo ? 0 : Number.isFinite(video.duration) ? video.duration : scene?.duration || 0
   const progress = duration ? (video.currentTime / duration) * 100 : 0
-  $('#current-time').textContent = formatTime(video.currentTime)
-  $('#duration').textContent = formatTime(duration)
-  $('#scrubber-fill').style.width = `${progress}%`
+  $('#current-time').textContent = photo ? '00:00' : formatTime(video.currentTime)
+  $('#duration').textContent = photo ? '00:00' : formatTime(duration)
+  $('#scrubber-fill').style.width = `${photo ? 0 : progress}%`
   $('#play').innerHTML = video.paused ? icons.play : icons.pause
   $('#hotspot-count').textContent = `${scene?.hotspots.length || 0} interaction${scene?.hotspots.length === 1 ? '' : 's'}`
-  $('#scrubber-markers').innerHTML = (scene?.hotspots || []).map((hotspot) => {
+  $('#scrubber-markers').innerHTML = (photo ? [] : scene?.hotspots || []).map((hotspot) => {
     const left = duration ? (hotspot.time / duration) * 100 : 0
     return `<i style="left:${left}%" title="${escapeHtml(hotspot.label)}"></i>`
   }).join('')
@@ -595,10 +713,11 @@ function createViewer() {
 
   const geometry = new THREE.SphereGeometry(500, 60, 40)
   geometry.scale(-1, 1, 1)
-  const texture = new THREE.VideoTexture(video)
-  texture.colorSpace = THREE.SRGBColorSpace
-  const material = new THREE.MeshBasicMaterial({ map: texture })
+  const videoTexture = new THREE.VideoTexture(video)
+  videoTexture.colorSpace = THREE.SRGBColorSpace
+  const material = new THREE.MeshBasicMaterial({ map: videoTexture })
   scene.add(new THREE.Mesh(geometry, material))
+  const photoTextures = new Map()
 
   let longitude = 0
   let latitude = 0
@@ -656,6 +775,28 @@ function createViewer() {
   animate()
 
   return {
+    showScene(target) {
+      if (!target) return
+      if (target.kind !== 'photo') {
+        material.map = videoTexture
+        material.needsUpdate = true
+        return
+      }
+
+      const cached = photoTextures.get(target.id)
+      if (cached) {
+        material.map = cached
+        material.needsUpdate = true
+        return
+      }
+
+      loadPhotoTexture(target.url, renderer.capabilities.maxTextureSize).then((photoTexture) => {
+        photoTextures.set(target.id, photoTexture)
+        if (state.activeSceneId !== target.id) return
+        material.map = photoTexture
+        material.needsUpdate = true
+      }).catch(() => notify(`${target.name} could not be displayed`))
+    },
     resetView() {
       longitude = 0
       latitude = 0
@@ -684,6 +825,39 @@ function createViewer() {
   }
 }
 
+function buildEmbedCode() {
+  const base = ($('#embed-base').value.trim() || 'https://example.com/tours/my-tour').replace(/\/+$/, '')
+  const width = $('#embed-width').value.trim() || '100%'
+  const rawHeight = $('#embed-height').value.trim() || '600'
+  const height = /^\d+$/.test(rawHeight) ? rawHeight : rawHeight
+  const title = escapeAttr(state.projectName || 'Virtual tour')
+  return `<iframe src="${escapeAttr(base)}/embed.html" title="${title}" width="${escapeAttr(width)}" height="${escapeAttr(height)}" style="border:0;border-radius:12px;max-width:100%" loading="lazy" allowfullscreen></iframe>`
+}
+
+function refreshEmbedCode() {
+  $('#embed-code').value = buildEmbedCode()
+}
+
+function openEmbedDialog() {
+  if (!state.scenes.length) {
+    notify('Add a scene before embedding')
+    return
+  }
+  refreshEmbedCode()
+  $('#embed-dialog').showModal()
+}
+
+async function copyEmbedCode(event) {
+  event.preventDefault()
+  try {
+    await navigator.clipboard.writeText(buildEmbedCode())
+    notify('Embed code copied')
+  } catch {
+    $('#embed-code').select()
+    notify('Press Ctrl+C to copy the selected code')
+  }
+}
+
 async function exportTour() {
   if (!state.scenes.length) {
     notify('Add scenes before exporting')
@@ -695,7 +869,7 @@ async function exportTour() {
   button.textContent = 'Building tour…'
   const zip = new JSZip()
   const usedNames = new Set()
-  const exportedScenes = state.scenes.map(({ id, name, fileName, file, duration, hotspots }) => {
+  const exportedScenes = state.scenes.map(({ id, kind, name, fileName, file, duration, hotspots }) => {
     const safeName = fileName.replace(/[^a-zA-Z0-9._-]+/g, '-')
     let exportName = safeName
     let suffix = 2
@@ -705,20 +879,22 @@ async function exportTour() {
       suffix += 1
     }
     usedNames.add(exportName.toLowerCase())
-    zip.file(`videos/${exportName}`, file)
-    return { id, name, fileName, video: `./videos/${exportName}`, duration, hotspots }
+    zip.file(`media/${exportName}`, file)
+    return { id, kind: kind || 'video', name, fileName, src: `./media/${exportName}`, duration, hotspots }
   })
 
   const manifest = {
-    version: 1,
+    version: 2,
     name: state.projectName,
     entrySceneId: state.scenes[0].id,
     scenes: exportedScenes,
   }
 
+  const iconPaths = Object.fromEntries(Object.entries(pinIcons).map(([name, icon]) => [name, icon.path]))
   zip.file('index.html', playerHtml)
+  zip.file('embed.html', embedHtml)
   zip.file('styles.css', playerStyles)
-  zip.file('player.js', playerScript)
+  zip.file('player.js', playerScript.replace('__PIN_ICONS__', JSON.stringify(iconPaths)))
   zip.file('three.module.js', threeSource)
   zip.file('three.core.min.js', threeCoreSource)
   zip.file('tour.json', JSON.stringify(manifest, null, 2))
@@ -728,7 +904,7 @@ async function exportTour() {
     const blob = await zip.generateAsync({ type: 'blob', streamFiles: true })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `${state.projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'chaos360-tour'}.zip`
+    link.download = `${state.projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'showround-tour'}.zip`
     link.click()
     setTimeout(() => URL.revokeObjectURL(link.href), 1000)
     notify('Publishable tour exported')
@@ -741,7 +917,7 @@ async function exportTour() {
 }
 
 function bindEvents() {
-  const input = $('#video-input')
+  const input = $('#media-input')
   ;['#add-scenes', '#upload-card', '#empty-upload'].forEach((selector) => {
     $(selector).addEventListener('click', () => input.click())
   })
@@ -756,9 +932,12 @@ function bindEvents() {
   $('#hotspot-dialog').addEventListener('close', cancelAddHotspot)
   $('#info-dialog').addEventListener('close', cancelAddHotspot)
   $('#close-inspector').addEventListener('click', closeInspector)
-  $('#play').addEventListener('click', () => video.paused ? playVideo() : video.pause())
+  $('#play').addEventListener('click', () => {
+    if (isPhotoScene(activeScene())) return
+    video.paused ? playVideo() : video.pause()
+  })
   $('#scrubber').addEventListener('click', (event) => {
-    if (!Number.isFinite(video.duration)) return
+    if (isPhotoScene(activeScene()) || !Number.isFinite(video.duration)) return
     const rect = event.currentTarget.getBoundingClientRect()
     video.currentTime = ((event.clientX - rect.left) / rect.width) * video.duration
   })
@@ -777,15 +956,23 @@ function bindEvents() {
     renderHotspots()
   })
   $('#hotspot-target').addEventListener('change', (event) => { activeHotspot().targetSceneId = event.target.value })
-  $('#hotspot-icon').addEventListener('change', (event) => {
-    activeHotspot().icon = event.target.value
+  bindIconPicker($('#hotspot-icon-picker'), (icon) => {
+    activeHotspot().icon = icon
     renderHotspots()
+    renderInspectorOverview()
+  })
+  bindIconPicker($('#new-hotspot-icon-picker'), (icon) => { state.pendingIcon = icon })
+  bindIconPicker($('#new-info-icon-picker'), (icon) => { state.pendingIcon = icon })
+  $('#embed-tour').addEventListener('click', openEmbedDialog)
+  $('#copy-embed').addEventListener('click', copyEmbedCode)
+  ;['#embed-base', '#embed-width', '#embed-height'].forEach((selector) => {
+    $(selector).addEventListener('input', refreshEmbedCode)
   })
   $('#delete-hotspot').addEventListener('click', () => deleteInteraction(state.activeHotspotId))
 
   video.addEventListener('loadedmetadata', () => {
     const scene = activeScene()
-    if (scene) scene.duration = video.duration
+    if (scene && !isPhotoScene(scene)) scene.duration = video.duration
     renderScenes()
     updateTimeline()
   })
@@ -808,7 +995,7 @@ function bindEvents() {
     const isFormControl = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(event.target.tagName) || event.target.isContentEditable
     if (event.code === 'Space' && !isFormControl) {
       event.preventDefault()
-      if (activeScene()) video.paused ? playVideo() : video.pause()
+      if (activeScene() && !isPhotoScene(activeScene())) video.paused ? playVideo() : video.pause()
     }
   })
   window.addEventListener('beforeunload', () => state.scenes.forEach((scene) => URL.revokeObjectURL(scene.url)))
