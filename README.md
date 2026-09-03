@@ -44,4 +44,27 @@ npm run dev
 npm run build
 ```
 
-Changes merged into `main` are deployed to GitHub Pages automatically.
+## Deployment
+
+The editor is a static build, so it is hosted on Sevalla as a **Static Site**
+rather than an Application. Applications run a server process, which this
+project does not need.
+
+Sevalla settings:
+
+| Setting | Value |
+| --- | --- |
+| Build command | `npm run build` |
+| Publish directory | `dist` |
+| Node version | read from `engines.node` in `package.json` |
+
+Sevalla builds with Nixpacks, which takes the Node version from the
+`engines` field, so the build matches local development without any extra
+dashboard configuration.
+
+Connect the repository in the Sevalla dashboard and pick the branch to
+deploy. Pushes to that branch then rebuild automatically.
+
+`vite.config.js` sets `base: './'`, which keeps every asset path relative.
+That works whether the site is served from a domain root or a subpath, and
+it is also what lets an exported tour run from any folder.
