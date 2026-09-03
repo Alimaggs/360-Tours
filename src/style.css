@@ -23,6 +23,11 @@
 }
 
 * { box-sizing: border-box; }
+/* The browser's own [hidden] rule is only display:none at element specificity,
+   so any class rule setting display beats it. The inspector styles labels as
+   display:block, which silently un-hid every field toggled with the hidden
+   attribute. Keep this above those rules. */
+[hidden] { display: none !important; }
 body { margin: 0; min-width: 1100px; min-height: 100vh; overflow: hidden; }
 button, input, select { font: inherit; }
 button { color: inherit; }
@@ -148,16 +153,21 @@ h2, h3, p { margin: 0; }
 .hotspot-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .viewer-hotspot { position: absolute; top: 0; left: 0; pointer-events: auto; border: 0; background: transparent; padding: 0; display: flex; align-items: center; transition: opacity .15s; cursor: pointer; }
 .viewer-hotspot.behind { opacity: 0; pointer-events: none; }
-.viewer-hotspot > span { width: 35px; height: 35px; border: 3px solid #fff; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: var(--lime); font-size: 17px; font-weight: 700; box-shadow: 0 4px 14px #14251e75; transform: translate(-50%, -50%); }
-.viewer-hotspot b { opacity: 0; transform: translate(-12px, -50%); color: #fff; background: #1d2c27d9; padding: 5px 9px 5px 16px; border-radius: 0 6px 6px 0; font-size: 10px; white-space: nowrap; transition: .15s; }
+.viewer-hotspot > span:first-child { width: 35px; height: 35px; border: 3px solid #fff; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: var(--lime); font-size: 17px; font-weight: 700; box-shadow: 0 4px 14px #14251e75; transform: translate(-50%, -50%); }
+.viewer-hotspot b { opacity: 0; transform: translate(-12px, -50%); max-width: 210px; overflow: hidden; text-overflow: ellipsis; color: #fff; background: #1d2c27d9; padding: 5px 9px 5px 16px; border-radius: 0 6px 6px 0; font-size: 10px; white-space: nowrap; transition: .15s; }
 .viewer-hotspot:hover b, .viewer-hotspot.selected b { opacity: 1; }
-.viewer-hotspot > span .pin-icon { width: 19px; height: 19px; }
+.viewer-hotspot > span:first-child .pin-icon { width: 19px; height: 19px; }
 .interaction-index-edit > i .pin-icon { width: 15px; height: 15px; }
-.viewer-hotspot.selected > span { box-shadow: 0 0 0 5px #ffffff45, 0 4px 14px #14251e75; }
+.viewer-hotspot.selected > span:first-child { box-shadow: 0 0 0 5px #ffffff45, 0 4px 14px #14251e75; }
 .viewer-hotspot.info-point > span:first-child { background: var(--aqua); }
-.viewer-hotspot .info-card { min-width: 130px; max-width: 220px; transform: translate(-12px, -50%); padding: 7px 10px 7px 16px; border-radius: 0 7px 7px 0; color: #fff; background: #1d2c27e8; text-align: left; box-shadow: 0 5px 16px #14251e45; }
-.viewer-hotspot .info-card b { display: block; opacity: 1; transform: none; padding: 0; background: none; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.viewer-hotspot .info-card p { display: none; margin-top: 5px; color: #dce8e3; font-size: 9px; line-height: 1.45; }
+/* width:max-content lets the card shrink to a two-word title and stop at
+   max-width for a long one. Without it the card sat at its min-width while a
+   nowrap title grew past it, and the text escaped the box entirely. */
+.viewer-hotspot .info-card { width: max-content; min-width: 120px; max-width: 210px; overflow: hidden; transform: translate(-12px, -50%); padding: 8px 11px 8px 17px; border-radius: 0 8px 8px 0; color: #fff; background: #1d2c27e8; text-align: left; box-shadow: 0 5px 16px #14251e45; }
+/* The title wraps rather than truncating, since it is the one part always on
+   screen. overflow-wrap stops a single long word pushing the card wider. */
+.viewer-hotspot .info-card b { display: block; max-width: none; opacity: 1; transform: none; padding: 0; background: none; font-size: 11px; line-height: 1.35; white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+.viewer-hotspot .info-card p { display: none; margin-top: 6px; color: #dce8e3; font-size: 9px; line-height: 1.5; overflow-wrap: anywhere; }
 .viewer-hotspot.info-point:hover .info-card p, .viewer-hotspot.info-point.expanded .info-card p, .viewer-hotspot.info-point.selected .info-card p { display: block; }
 .add-instruction { position: absolute; z-index: 5; top: 14px; left: 50%; transform: translate(-50%, -8px); padding: 8px 12px; border-radius: 7px; background: #17241fdf; color: #fff; font-size: 10px; opacity: 0; pointer-events: none; transition: .2s; }
 .add-instruction.visible { opacity: 1; transform: translate(-50%, 0); }
@@ -216,6 +226,8 @@ kbd { font: inherit; color: #bbc6c1; margin-left: 8px; }
 .inspector-content textarea, dialog textarea { height: auto; min-height: 90px; padding: 10px; line-height: 1.45; resize: vertical; }
 .inspector-content input:focus, .inspector-content select:focus, .inspector-content textarea:focus, dialog input:focus, dialog select:focus, dialog textarea:focus { border-color: var(--aqua); box-shadow: 0 0 0 3px var(--ice); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.char-count { display: block; margin-top: 5px; text-align: right; color: #a3aca8; font-size: 9px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.char-count.near-limit { color: var(--accent-dark); }
 .pin-field { margin-bottom: 16px; }
 .pin-field-title { display: block; color: #65706b; font-size: 10px; font-weight: 600; margin-bottom: 7px; }
 .icon-picker { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }

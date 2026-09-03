@@ -7,6 +7,16 @@
 
 export const releases = [
   {
+    version: '0.4.0',
+    date: '2026-09-03',
+    title: 'Tidier info points',
+    notes: [
+      'Long info point titles now wrap neatly inside their box instead of spilling across the picture.',
+      'The settings panel only shows the fields that apply, so info points no longer ask you to link a scene.',
+      'Info point notes now show how many characters you have left.',
+    ],
+  },
+  {
     version: '0.3.0',
     date: '2026-09-03',
     title: 'A front door for Showround',

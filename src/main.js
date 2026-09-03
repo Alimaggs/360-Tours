@@ -137,7 +137,7 @@ document.querySelector('#app').innerHTML = `
           <button class="icon-button compact" id="close-inspector">${icons.close}</button>
         </div>
         <label><span id="interaction-label-title">Label</span><input id="hotspot-label" maxlength="60" placeholder="e.g. Enter the kitchen"></label>
-        <label id="hotspot-description-wrap" hidden>Information<textarea id="hotspot-description" maxlength="280" rows="5" placeholder="Add a couple of sentences about this point."></textarea></label>
+        <label id="hotspot-description-wrap" hidden>Information<textarea id="hotspot-description" maxlength="240" rows="5" placeholder="Add a couple of sentences about this point."></textarea><small class="char-count" id="hotspot-description-count"></small></label>
         <label id="hotspot-target-wrap">Link to scene<select id="hotspot-target"></select></label>
         <label>Placed at<input id="hotspot-time" type="text" readonly></label>
         <div class="pin-field">
@@ -173,7 +173,7 @@ document.querySelector('#app').innerHTML = `
       <h2>Create an info point</h2>
       <p>Add context visitors can reveal without leaving the scene.</p>
       <label>Title<input id="new-info-title" maxlength="60" placeholder="e.g. Original oak staircase"></label>
-      <label>Information<textarea id="new-info-description" maxlength="280" rows="5" placeholder="Add a couple of sentences about this point."></textarea></label>
+      <label>Information<textarea id="new-info-description" maxlength="240" rows="5" placeholder="Add a couple of sentences about this point."></textarea><small class="char-count" id="new-info-description-count"></small></label>
       <div class="pin-field">
         <span class="pin-field-title">Icon</span>
         <div class="icon-picker" id="new-info-icon-picker"></div>
@@ -328,6 +328,27 @@ function bindIconPicker(container, onPick) {
     renderIconPicker(container, choice.dataset.icon)
     onPick(choice.dataset.icon)
   })
+}
+
+// An invisible maxlength just stops accepting keystrokes with no explanation,
+// so each capped field shows how much room is left.
+const charCounters = []
+
+function bindCharCount(fieldSelector, counterSelector) {
+  const field = $(fieldSelector)
+  const counter = $(counterSelector)
+  const limit = Number(field.getAttribute('maxlength'))
+  const update = () => {
+    counter.textContent = `${field.value.length} / ${limit}`
+    counter.classList.toggle('near-limit', field.value.length >= limit - 25)
+  }
+  field.addEventListener('input', update)
+  charCounters.push(update)
+  update()
+}
+
+function refreshCharCounts() {
+  charCounters.forEach((update) => update())
 }
 
 function notify(message) {
@@ -554,6 +575,7 @@ function selectHotspot(id) {
   renderIconPicker($('#hotspot-icon-picker'), iconFor(hotspot))
   $('#hotspot-time').value = formatTime(hotspot.time)
   $('#hotspot-position').textContent = `${Math.round(hotspot.yaw)}°, ${Math.round(hotspot.pitch)}°`
+  refreshCharCounts()
   if (!isInfo) populateSceneSelect($('#hotspot-target'), hotspot.targetSceneId)
   renderInspectorOverview()
   renderHotspots()
@@ -702,6 +724,7 @@ function openHotspotDialog(event) {
     renderIconPicker($('#new-info-icon-picker'), state.pendingIcon)
     $('#new-info-title').value = ''
     $('#new-info-description').value = ''
+    refreshCharCounts()
     $('#info-dialog').showModal()
   } else {
     state.pendingIcon = defaultHotspotIcon
@@ -1157,6 +1180,8 @@ function bindEvents() {
   })
   bindIconPicker($('#new-hotspot-icon-picker'), (icon) => { state.pendingIcon = icon })
   bindIconPicker($('#new-info-icon-picker'), (icon) => { state.pendingIcon = icon })
+  bindCharCount('#hotspot-description', '#hotspot-description-count')
+  bindCharCount('#new-info-description', '#new-info-description-count')
   $('#embed-tour').addEventListener('click', openEmbedDialog)
   $('#whats-new').addEventListener('click', openWhatsNew)
   $('#copy-embed').addEventListener('click', copyEmbedCode)
